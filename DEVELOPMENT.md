@@ -35,3 +35,15 @@ pnpm preview
 - Vite 正式建置成功（有第三方 use client 與超過 500 kB chunk 警告）。
 - 本機開發伺服器 http://127.0.0.1:5173/ 回應 HTTP 200。
 - 瀏覽器自動化初始化失敗（沙箱 ACL 錯誤），因此尚未完成視覺 QA、繪圖操作、本機儲存重開及匯入匯出實測。
+
+## 第二階段：資料保存強化（2026-09-22）
+
+- IndexedDB 升級為 v2，保留原始 v1 草稿，寫入記錄含 schemaVersion 與 revision。
+- 寫入採交易內版本比對，多分頁衝突拒絕覆寫並提示匯出。
+- 匯入前以同一筆交易保留舊稿，最多 3 份（每份最高 10 MB），可下載最近副本。
+- 自動儲存序列化，失敗維持未儲存狀態並提供重試。
+- 本機與 JSON 備份保留刪除標記，為重連合併準備。
+- 單元測試 10 項、Chromium 瀏覽器測試 4 項通過；實測繪圖、重開草稿、JSON 還原、PNG/SVG 檔案輸出、恢復副本、錯誤匯入、多分頁與損毀草稿保護。已查看畫布截圖。
+- 原先瀏覽器工具 ACL 限制已透過專案 Playwright 測試環境完成替代驗證；iPad／Safari 與離線 PWA 仍待驗收。
+
+測試指令：`pnpm test`、`pnpm typecheck`、`pnpm test:e2e`。首次執行瀏覽器測試先 `pnpm exec playwright install chromium`。
