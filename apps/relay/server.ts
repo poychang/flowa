@@ -148,13 +148,19 @@ export function createRelay(options: RelayOptions) {
     handler('sync-ready', value => {
       if (value?.transferId !== socket.data.transferId || !Number.isSafeInteger(value?.seq) || socket.data.snapshotSeq === undefined || value.seq < socket.data.snapshotSeq || value.seq > room.seq) throw new Error('invalid-ready');
       if (value.seq !== room.seq) return { ready: false, seq: room.seq };
-      member.ready = true; members(room); return { ready: true, seq: room.seq };
+      member.ready = true;
+      // The snapshot plus buffered deltas also acknowledges earlier pending work.
+      for (const [seq, pending] of room.pending) if (seq <= value.seq) {
+        pending.waiting.delete(socket.id);
+        if (!pending.waiting.size) { io.to(pending.update.sender).emit('sync-ack', { id: pending.update.id, seq }); room.pending.delete(seq); }
+      }
+      members(room); return { ready: true, seq: room.seq };
     });
     handler('elements-update', value => {
       authorized(socket, true); if (!member.ready) throw new Error('not-ready');
       rate(`delta:${socket.id}`, 12, 1000);
       const delta = parseDelta(value); const key = `${socket.id}:${delta.id}`; const fingerprint = hash(canonical(delta)); const seen = room.seen.get(key);
-      if (seen) { if (seen.hash !== fingerprint) throw new Error('conflicting-message'); return { seq: seen.seq }; }
+      if (seen) { if (seen.hash !== fingerprint) throw new Error('conflicting-message'); if (!room.pending.has(seen.seq)) socket.emit('sync-ack', { id: delta.id, seq: seen.seq }); return { seq: seen.seq }; }
       const bytes = jsonBytes(delta);
       if (room.pending.size >= LIMITS.bufferCount || [...room.pending.values()].reduce((sum, item) => sum + item.bytes, bytes) > LIMITS.bufferBytes) throw new Error('resync-required');
       const next = catalog(room, delta.elements);

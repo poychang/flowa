@@ -4,12 +4,13 @@ import { createRelay } from '../../apps/relay/server.ts';
 import { rectangle } from '../browser/fixtures.ts';
 import { ORIGIN, roomAt, connect, initialize, joinFrom, rpc, update } from './helpers.ts';
 import type { Update } from '../../packages/protocol/index.ts';
+import type { Socket } from 'socket.io-client';
 
 const duration = Number(process.env.SOAK_SECONDS ?? 1800) * 1000;
 async function scenario(count: number) {
   const relay = createRelay({ origins: [ORIGIN] }); const url = `http://127.0.0.1:${await relay.listen()}`;
   const start = performance.now(), cpu = process.cpuUsage(); const errors: string[] = [], latency: number[] = [], memory: number[] = [];
-  const room = await roomAt(url); const peers = []; const scenes: Map<string, any>[] = []; const pending = new Map<string, number>();
+  const room = await roomAt(url); const peers: Socket[] = []; const scenes: Map<string, any>[] = []; const pending = new Map<string, number>();
   const timers: ReturnType<typeof setInterval>[] = [];
   try {
     const initial = Array.from({ length: 500 }, (_, index) => rectangle(`object-${index}`, { x: index * 5, index: `a${String(index).padStart(4, '1')}` }));
