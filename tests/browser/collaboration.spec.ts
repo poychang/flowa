@@ -132,6 +132,7 @@ test('failed reconnect backup stops remote apply and keeps offline changes', asy
       IDBObjectStore.prototype.add = function (...args) { if (this.name === 'recoveries') throw new DOMException('Backup quota exceeded', 'QuotaExceededError'); return add.apply(this, args); };
     });
     await draw(page, 900, 600);
+    await expect.poll(async () => (await savedElements(page)).length).toBe(1);
     await context.setOffline(false);
     await expect(guest.getByTestId('sync-status')).toHaveText('同步失敗');
     expect((await savedElements(guest)).length).toBe(1);
@@ -179,4 +180,30 @@ test('an expired link never creates or exports a blank replacement', async ({ pa
     return new Promise(resolve => { const r = db.transaction('boards').objectStore('boards').get('room:nonexistent'); r.onsuccess = () => { db.close(); resolve(r.result); }; });
   });
   expect(stored).toBeUndefined();
+});
+
+test('changing a room fragment preserves unsaved work when storage fails', async ({ page }) => {
+  await page.goto('/'); await expect(page.getByRole('button', { name: '建立協作房間' })).toBeEnabled();
+  await page.evaluate(() => {
+    const put = IDBObjectStore.prototype.put;
+    IDBObjectStore.prototype.put = function (...args) { if (this.name === 'boards') throw new DOMException('Quota exceeded', 'QuotaExceededError'); return put.apply(this, args); };
+  });
+  await draw(page);
+  await page.evaluate(() => { location.hash = 'room=nonexistent&key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'; });
+  await expect(page.getByRole('alert')).toContainText('切換前儲存失敗');
+  await expect(page).toHaveURL('http://127.0.0.1:5180/');
+  const downloaded = page.waitForEvent('download'); await page.getByRole('button', { name: '備份 JSON ↗' }).click();
+  const stream = await (await downloaded).createReadStream(); const chunks = []; for await (const chunk of stream!) chunks.push(chunk);
+  expect(JSON.parse(Buffer.concat(chunks).toString()).elements.filter((element: any) => !element.isDeleted)).toHaveLength(1);
+});
+
+test('changing a room fragment flushes the current draft before joining', async ({ page }) => {
+  await page.goto('/'); await expect(page.getByRole('button', { name: '建立協作房間' })).toBeEnabled();
+  await draw(page);
+  await page.evaluate(() => { location.hash = 'room=nonexistent&key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'; });
+  await expect(page.getByTestId('sync-status')).toHaveText('房間失效');
+  await page.getByRole('button', { name: '離開房間' }).click();
+  const downloaded = page.waitForEvent('download'); await page.getByRole('button', { name: '備份 JSON ↗' }).click();
+  const stream = await (await downloaded).createReadStream(); const chunks = []; for await (const chunk of stream!) chunks.push(chunk);
+  expect(JSON.parse(Buffer.concat(chunks).toString()).elements.filter((element: any) => !element.isDeleted)).toHaveLength(1);
 });

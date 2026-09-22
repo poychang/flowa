@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import type { MutableRefObject } from 'react';
 import { Excalidraw, MainMenu, exportToBlob, exportToSvg } from '@excalidraw/excalidraw';
 import type { ExcalidrawImperativeAPI, ExcalidrawInitialDataState } from '@excalidraw/excalidraw/types';
 import { BoardRepository } from './storage';
@@ -33,7 +34,7 @@ function download(blob: Blob, filename: string) {
 }
 const jsonBlob = (scene: string) => new Blob([scene], { type: 'application/json' });
 
-function Board({ link, navigate }: { link?: RoomLink; navigate: (link?: RoomLink) => void }) {
+function Board({ link, navigate, beforeNavigate }: { link?: RoomLink; navigate: (link?: RoomLink) => void; beforeNavigate: MutableRefObject<(() => Promise<boolean>) | undefined> }) {
   const [repository] = useState(() => new BoardRepository('flowa', link ? `room:${link.roomId}` : 'draft'));
   const [api, setApi] = useState<ExcalidrawImperativeAPI>();
   const [initial, setInitial] = useState<ExcalidrawInitialDataState | null>(null);
@@ -73,6 +74,12 @@ function Board({ link, navigate }: { link?: RoomLink; navigate: (link?: RoomLink
 
   useEffect(() => {
     let mounted = true;
+    beforeNavigate.current = async () => {
+      try {
+        if (blocked.current || importing.current) throw new Error('storage-unavailable');
+        await saver.current!.flush(); return true;
+      } catch { setError('切換前儲存失敗，已留在原畫布，請先匯出目前內容。'); return false; }
+    };
     void (async () => {
       try {
         const draft = await repository.read();
@@ -96,7 +103,7 @@ function Board({ link, navigate }: { link?: RoomLink; navigate: (link?: RoomLink
     const hide = () => { if (document.hidden) void saver.current!.flush().catch(() => undefined); };
     window.addEventListener('beforeunload', leave);
     document.addEventListener('visibilitychange', hide);
-    return () => { mounted = false; saver.current!.dispose(); window.removeEventListener('beforeunload', leave); document.removeEventListener('visibilitychange', hide); };
+    return () => { mounted = false; beforeNavigate.current = undefined; saver.current!.dispose(); window.removeEventListener('beforeunload', leave); document.removeEventListener('visibilitychange', hide); };
   }, []);
 
   useEffect(() => {
@@ -263,10 +270,24 @@ function Board({ link, navigate }: { link?: RoomLink; navigate: (link?: RoomLink
 
 export function App() {
   const [link, setLink] = useState(readLink);
-  useEffect(() => { const changed = () => setLink(readLink()); window.addEventListener('hashchange', changed); return () => window.removeEventListener('hashchange', changed); }, []);
+  const beforeNavigate = useRef<() => Promise<boolean>>();
+  const navigation = useRef(0);
+  useEffect(() => {
+    const changed = async () => {
+      // Keep the current canvas mounted until its pending save succeeds.
+      const next = readLink(), request = ++navigation.current;
+      const allowed = await beforeNavigate.current?.() ?? true;
+      if (request !== navigation.current) return;
+      if (allowed) setLink(next);
+      else history.replaceState(null, '', link ? shareLink(link.roomId, link.token) : location.pathname);
+    };
+    window.addEventListener('hashchange', changed);
+    return () => window.removeEventListener('hashchange', changed);
+  }, [link]);
   function navigate(next?: RoomLink) {
+    navigation.current++;
     history.replaceState(null, '', next ? shareLink(next.roomId, next.token) : location.pathname);
     setLink(next);
   }
-  return <Board key={link ? `${link.roomId}:${link.token}` : 'draft'} link={link} navigate={navigate}/>;
+  return <Board key={link ? `${link.roomId}:${link.token}` : 'draft'} link={link} navigate={navigate} beforeNavigate={beforeNavigate}/>;
 }
