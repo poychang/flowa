@@ -64,3 +64,18 @@ test('unknown future record is preserved rather than migrated destructively', as
   assert.deepEqual(await db.get('boards', 'draft'), future);
   db.close(); await repository.close();
 });
+
+test('replacement transaction failure rolls back both new draft and recovery', async (t) => {
+  const repository = new BoardRepository(crypto.randomUUID());
+  await repository.write('original', 0);
+  const originalPut = IDBObjectStore.prototype.put;
+  const mock = t.mock.method(IDBObjectStore.prototype, 'put', function (this: IDBObjectStore, ...args: Parameters<IDBObjectStore['put']>) {
+    if (this.name === 'boards') throw new DOMException('quota', 'QuotaExceededError');
+    return originalPut.apply(this, args);
+  });
+  await assert.rejects(repository.write('replacement', 1, true));
+  mock.mock.restore();
+  assert.equal((await repository.read())?.scene, 'original');
+  assert.equal(await repository.latestRecovery(), undefined);
+  await repository.close();
+});

@@ -16,6 +16,8 @@
     "allowImportingTsExtensions": true
   },
   "include": [
-    "apps/web/src"
+    "apps/web/src",
+    "tests",
+    "playwright.config.ts"
   ]
 }

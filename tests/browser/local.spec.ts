@@ -79,3 +79,34 @@ test('corrupt local draft is preserved and never replaced with blank data', asyn
   await page.reload(); await expect(page.getByRole('alert')).toContainText('原資料');
   expect(await readDraft(page)).toBe('broken JSON');
 });
+
+test('storage failure shows failure until retry commits successfully', async ({ page }) => {
+  await page.addInitScript(() => {
+    (window as any).failFlowaSave = true;
+    const put = IDBObjectStore.prototype.put;
+    IDBObjectStore.prototype.put = function (...args) {
+      if (this.name === 'boards' && (window as any).failFlowaSave) throw new DOMException('Storage quota exceeded', 'QuotaExceededError');
+      return put.apply(this, args);
+    };
+  });
+  await page.goto('/');
+  await expect(page.getByRole('status')).toHaveText('儲存失敗');
+  expect(await readDraft(page)).toBeUndefined();
+  await page.evaluate(() => { (window as any).failFlowaSave = false; });
+  await page.getByRole('button', { name: '重試儲存' }).click();
+  await expect(page.getByRole('status')).toHaveText('已存於此裝置');
+  expect((await readDraft(page)).revision).toBe(1);
+});
+
+test('JSON backup restores in a clean browser and retains deleted elements', async ({ browser }) => {
+  const context = await browser.newContext(); const page = await context.newPage();
+  try {
+    await page.goto('/'); await expect(page.getByRole('button', { name: '匯入 JSON', exact: true })).toBeEnabled();
+    await imported(page, scene([rectangle('visible'), rectangle('deleted', { isDeleted: true, index: 'a1' })]));
+    await expect.poll(async () => JSON.parse((await readDraft(page)).scene).elements.length).toBe(2);
+    await page.reload(); await expect(page.getByRole('button', { name: '備份 JSON ↗' })).toBeEnabled();
+    const event = page.waitForEvent('download'); await page.getByRole('button', { name: '備份 JSON ↗' }).click();
+    const data = JSON.parse((await downloadText(await event)).toString());
+    expect(data.elements.find((element: any) => element.id === 'deleted').isDeleted).toBe(true);
+  } finally { await context.close(); }
+});

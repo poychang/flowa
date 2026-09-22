@@ -86,7 +86,7 @@ MVP 不使用 tldraw、PostgreSQL、Redis、Blob Storage、獨立 ASP.NET Core A
 
 ## 快速開始與狀態
 
-目前已有 **Phase 0 單人畫布原型**，未部署，尚未完成協作 PoC 或 MVP 驗收。執行 `pnpm install`、`pnpm dev` 啟動；執行 `pnpm build` 編譯。實作範圍與限制見 [DEVELOPMENT.md](./DEVELOPMENT.md)。
+目前已有 **Phase 0 單人畫布原型與元素同步 PoC**：11 項單元及 14 項 Chromium 測試通過。尚未接入正式多人房間、完成 Phase 0 全部驗收或部署。執行 `pnpm install`、`pnpm dev` 啟動；執行 `pnpm build` 編譯。實作範圍與限制見 [DEVELOPMENT.md](./DEVELOPMENT.md)。
 
 單人模式須能在協作後端未設定或不可用時獨立運作。正式託管使用 HTTPS／WSS，瀏覽器直接連至 F1，不依賴 Static Web Apps 的 API 代理。
 

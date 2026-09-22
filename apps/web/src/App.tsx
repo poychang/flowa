@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { Excalidraw, MainMenu, exportToBlob, exportToSvg, loadFromBlob } from '@excalidraw/excalidraw';
+import { Excalidraw, MainMenu, exportToBlob, exportToSvg } from '@excalidraw/excalidraw';
 import type { ExcalidrawImperativeAPI, ExcalidrawInitialDataState } from '@excalidraw/excalidraw/types';
 import { repository } from './storage';
 import { Autosave } from './autosave';
 import { parseDocument } from './document';
-import { serializeScene } from './scene';
+import { serializeScene, deserializeScene } from './scene';
 
 function download(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -29,6 +29,7 @@ export function App() {
   const saver = useRef<Autosave>();
   if (!saver.current) saver.current = new Autosave(async scene => {
     if (blocked.current) throw new Error('已停止自動儲存，請匯出 JSON 保留目前內容。');
+    parseDocument(scene);
     const saved = await repository.write(scene, revision.current);
     revision.current = saved.revision;
   }, (state, failure) => {
@@ -41,7 +42,7 @@ export function App() {
     void (async () => {
       try {
         const draft = await repository.read();
-        const restored = draft ? await loadFromBlob(jsonBlob(JSON.stringify(parseDocument(draft.scene))), null, null) : { elements: [] };
+        const restored = draft ? await deserializeScene(draft.scene) : { elements: [] };
         if (!mounted) return;
         revision.current = draft?.revision ?? 0;
         if (draft) saver.current!.seed(draft.scene);
@@ -80,8 +81,7 @@ export function App() {
     try {
       if (blocked.current) throw new Error('原草稿讀取失敗，請先排除儲存問題後再匯入。');
       if (file.size > 10 * 1024 * 1024) throw new Error('檔案超過 10 MB 上限。');
-      const raw = parseDocument(await file.text());
-      const restored = await loadFromBlob(jsonBlob(JSON.stringify(raw)), null, null);
+      const restored = await deserializeScene(await file.text());
       await saver.current!.flush();
       const scene = serializeScene(restored.elements ?? [], restored.appState ?? {}, restored.files ?? {});
       // Backup and replacement succeed atomically before the editor is remounted.
