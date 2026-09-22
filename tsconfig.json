@@ -17,6 +17,8 @@
   },
   "include": [
     "apps/web/src",
+    "apps/relay",
+    "packages",
     "tests",
     "playwright.config.ts"
   ]
