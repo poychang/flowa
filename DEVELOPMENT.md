@@ -1,8 +1,8 @@
 # Flowa 開發狀態
 
-更新日期：2026-09-22。目前完成單人原型的資料保存強化與雙端元素同步 PoC；尚未完成 Phase 0 全部驗收，也不是完整多人 MVP。
+更新日期：2026-09-23。本階段已將多人協作接到正式畫布，提供可在本機執行的 Node / Socket.IO relay；尚未完成完整 MVP、PWA 或雲端部署。
 
-工作副本位於 `C:/Users/Nova/Documents/Codex/2026-09-22/flowa`，規格來源為桌面 `code/flowa` 的文件。
+工作副本位於 `C:/Users/Nova/Documents/Codex/2026-09-22/flowa`，規格來源為桌面 `code/flowa` 的文件。GitHub 為 https://github.com/poychang/flowa ，本階段使用 `feat/local-collaboration` 分支與 PR，不直接合併 main。
 
 ## 啟動與驗證
 
@@ -10,49 +10,52 @@
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm dev
+pnpm dev:all
 pnpm typecheck
 pnpm test
+pnpm test:relay
 pnpm exec playwright install chromium
 pnpm test:e2e
 pnpm build
-pnpm preview
+pnpm build:relay
 ```
+
+`pnpm dev` 可只啟動單人前端。協作 URL、Origin、建置產物與重啟恢復操作見 [協作操作文件](docs/collaboration.md)。
 
 ## 已實作
 
-- React / TypeScript / Excalidraw 繁體中文單人畫布，不依賴後端。
-- IndexedDB v2、舊字串草稿遷移、交易完成狀態、序列化自動儲存與失敗重試。
-- 版本比對防止多分頁靜默覆寫；衝突保留記憶體內容供匯出。
-- JSON 驗證與匯入，匯入前交易式恢復副本（最多 3 份）；可下載最近一份。
-- JSON / PNG / SVG 匯出。本機資料與 JSON 備份保留刪除標記，重新載入時也保留。
-- 純元素同步 adapter：版本合併、增量、ACK、去重、排序修復、互動期間暫存與有界緩衝。僅接於開發測試 harness，未接到正式畫布。
+- React / TypeScript / Excalidraw 繁體中文畫布，單人功能不依賴 relay。
+- IndexedDB v2、舊草稿相容、序列化儲存、失敗重試與多分頁版本衝突保護。
+- JSON 匯入驗證、交易式恢復副本、JSON / PNG / SVG 匯出，保留刪除標記。
+- Socket.IO WebSocket 房間、管理／編輯／唯讀角色、分享權杖、參與者及節流游標。
+- 協定 v2 的 schema、來源驗證、房間到期、全服務容量、速率與封包限制。
+- 分片快照、sequence 追趕、增量合併、套用後確認、重送去重與重連前 checkpoint。
+- 房間副本與單人草稿隔離；失效房間可從已有副本重開，不把載入失敗當成空白文件。
+- GitHub Actions 驗證工作流程；30 分鐘量測另由手動命令執行。
 
-## 本次驗證
+## 驗證結果
 
-- 11 項單元測試通過：自動儲存競爭與重試、格式限制、舊稿遷移、多分頁交易、恢復副本上限、交易回滾、未知格式保護。
-- 6 項單人 Chromium 操作測試通過：實際繪圖與重開、JSON 還原、PNG/SVG 檔案輸出、恢復副本、錯誤匯入、多分頁、損毀草稿、配額錯誤重試，以及刪除標記完整往返。
-- 8 項同步 Chromium 測試通過：兩個獨立 Browser Context 的並行修改／刪除、舊版重送、增量、Undo/Redo、共用物件保留遠端顏色、綁定資料、排序衝突、ACK、暫存上限與無效封包拒絕。
-- TypeScript 檢查涵蓋應用與測試碼。正式建置有第三方 use client 及大於 500 kB chunk 的既有警告。
-- 已查看實際畫布截圖；尚未對 PNG/SVG 進行逐像素比對。
+- 13 項單元測試通過：格式、遷移、儲存競爭／重試、交易回滾、恢復資料上限與房間隔離。
+- 7 項真實 relay 測試通過：角色、錯誤憑證／來源、容量競爭、分片與物件限制、ACK 重送、來源離線、逾時與緩衝上限。
+- 27 項 Chromium 測試通過：6 項原有單人、8 項同步 PoC、13 項正式畫布搭配真實 relay，包括唯讀、斷線編輯、重連備份失敗、服務重啟、500／2,000 物件、快照交錯、節點與綁定箭頭實際拖曳、窄螢幕與失效連結保護。
+- TypeScript、前端建置與 relay 建置通過。前端仍有第三方 `use client` 與大於 500 kB chunk 的既有警告。
+- 已檢視桌面及 390px 畫面。PNG/SVG 未做逐像素比對。
+- 2 人與 4 人各 30 分鐘量測：結果與測試方法見 [驗證報告](docs/testing/local-collaboration.md)，原始數據見 [relay-soak.json](docs/testing/relay-soak.json)。
 
-## 下一階段與限制
+## 限制與下一階段
 
-同步測試由測試程式在瀏覽器之間傳遞封包，沒有 Socket.IO、真正房間、角色憑證、遠端游標或跨網路效能量測。
+協作僅支援文字與向量圖形。場景限制為 2,000 個物件（含刪除標記）及 10 MiB；全服務最多 4 條協作連線。畫布同步是整個物件版本合併，沒有字元級文字 CRDT；同物件同時修改仍可能只保留勝出版本。
 
-後續優先實作初始快照／增量交錯與重連狀態機、重連前本機備份，再接入 Socket.IO relay 與房間權限。測試 harness 不會包含於正式 Vite 產物。
+分享連結不是永久文件網址，relay 不保存完整場景或雲端備份。資料在目前瀏覽器；重啟 relay 或全員離線後可能須持有副本的人重新開房。請定期匯出 JSON。
 
-尚未完成 PWA、離線字型與快取、Safari/iPad/觸控筆、500/2,000 物件效能、2/4 人各 30 分鐘測試、F1 配額驗證或 Azure 部署。同步 PoC 不支援圖片及嵌入內容；JSON 仍使用 Excalidraw v2，Flowa 的記錄 schemaVersion 與其分開。
+尚未完成 PWA、離線字型／快取、Safari/iPad/觸控筆、真實鎖屏與 WAN 測試、長時間瀏覽器繪製測試、Azure F1 配額量測或雲端部署。500／2,000 物件測試驗證分片與資料完整性，不是跨裝置幀率保證；本機 soak 的 CPU/RSS 也不能當成 F1 容量結論。
 
-設計決策與已知限制：
+下一階段應先決定 PWA 與跨裝置驗收，再以實際目標環境檢查 F1 配額與連線；不自動建立付費服務或擴容。
+
+## 設計紀錄
 
 - [本機儲存 ADR](docs/adr/0001-local-storage.md)
 - [同步 PoC ADR](docs/adr/0002-sync-poc.md)
+- [本機多人協作 ADR](docs/adr/0003-local-collaboration.md)
 
-## Git 里程碑
-
-- `41880b3`：單人畫布原型。
-- `4aef3ae`：資料保存保護與第一批操作測試。
-- 本階段後續提交：同步 PoC、刪除標記還原修正及本階段驗證文件。
-
-本地 main 分支持續提交，尚未設定遠端或推送。
+Git 作者設定為 `Nova <poychang.nova@gmail.com>`。本階段以 relay／協定、同步狀態機、介面整合、驗證文件分成可審查提交。

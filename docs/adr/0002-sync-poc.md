@@ -2,6 +2,8 @@
 
 狀態：PoC 通過目前測試，尚未核准正式多人功能；2026-09-22。
 
+2026-09-23 更新：正式畫布已採用 [ADR 0003](0003-local-collaboration.md) 的 Socket.IO 與協定 v2。以下保留 PoC 當時的設計與驗收紀錄；v1 封包只用於測試 harness。
+
 ## 決策與衝突規則
 
 固定 Excalidraw 0.18.1。使用套件公開匯出的 `reconcileElements`；不複製私有演算法，不引入另一套 CRDT 權威狀態。
