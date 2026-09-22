@@ -10,9 +10,10 @@
     "test": "node --experimental-transform-types --test tests/unit/*.test.ts",
     "typecheck": "tsc --noEmit",
     "test:e2e": "playwright test",
-    "dev:relay": "node --experimental-transform-types apps/relay/main.ts",
+    "dev:relay": "node --env-file-if-exists=.env.local --experimental-transform-types apps/relay/main.ts",
     "test:relay": "node --experimental-transform-types --test tests/relay/*.test.ts",
-    "build:relay": "tsc -p tsconfig.relay.json"
+    "build:relay": "tsc -p tsconfig.relay.json",
+    "dev:all": "node --env-file-if-exists=.env.local scripts/dev.mjs"
   },
   "dependencies": {
     "@excalidraw/excalidraw": "0.18.1",

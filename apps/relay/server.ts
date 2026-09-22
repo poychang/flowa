@@ -16,7 +16,7 @@ export function createRelay(options: RelayOptions) {
   const rooms = new Map<string, Room>();
   const now = options.now ?? Date.now;
   const rates = new Map<string, { start: number; count: number }>();
-  const stats = { acceptedUpdates: 0, forwardedBytes: 0, rejected: 0 };
+  const stats = { acceptedUpdates: 0, forwardedBytes: 0, outboundPayloadBytes: 0, rejected: 0 };
   function rate(key: string, maximum: number, windowMs: number) {
     const stamp = now(); const existing = rates.get(key);
     if (!existing || stamp - existing.start >= windowMs) {
@@ -38,6 +38,7 @@ export function createRelay(options: RelayOptions) {
     const origin = req.headers.origin;
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'");
     if (origin && options.origins.includes(origin)) {
       res.setHeader('Access-Control-Allow-Origin', origin); res.setHeader('Vary', 'Origin');
       res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization'); res.setHeader('Access-Control-Allow-Methods', 'POST, DELETE, GET, OPTIONS');
@@ -98,6 +99,9 @@ export function createRelay(options: RelayOptions) {
     } catch (error) { stats.rejected++; const failure = new Error(error instanceof Error && !('issues' in error) ? error.message : 'invalid-auth'); next(failure); }
   });
   io.on('connection', socket => {
+    // Count every Engine.IO message payload, including ACKs, Presence and
+    // snapshots. Excludes HTTP/WebSocket framing and any TLS overhead.
+    socket.conn.on('packetCreate', packet => { if (packet.data) stats.outboundPayloadBytes += typeof packet.data === 'string' ? Buffer.byteLength(packet.data) : Buffer.byteLength(packet.data as Buffer); });
     const room = rooms.get(socket.data.roomId)!;
     const member: Member = { id: socket.id, name: socket.data.name, role: socket.data.role, ready: false, color: ['#1971c2', '#e03131', '#2f9e44', '#9c36b5'][room.members.size % 4] };
     room.members.set(socket.id, member); socket.join(room.id); members(room);
@@ -182,7 +186,8 @@ export function createRelay(options: RelayOptions) {
     });
     handler('presence', value => {
       if (!member.ready) throw new Error('not-ready'); rate(`presence:${socket.id}`, 5, 1000);
-      socket.to(room.id).emit('presence', { id: socket.id, ...presenceSchema.parse(value) });
+      const presence = { id: socket.id, ...presenceSchema.parse(value) };
+      socket.to(room.id).emit('presence', presence); stats.forwardedBytes += jsonBytes(presence) * Math.max(0, room.members.size - 1);
     });
     socket.on('disconnect', () => {
       room.members.delete(socket.id); if (!room.members.size) room.emptyAt = now();

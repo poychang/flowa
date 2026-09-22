@@ -43,6 +43,15 @@ export class BoardRepository {
         const copies = await tx.objectStore('recoveries').getAll();
         const keys = allKeys.filter((_key, index) => (copies[index].boardKey ?? 'draft') === this.boardKey);
         for (const key of keys.slice(0, -MAX_RECOVERY_COPIES)) await tx.objectStore('recoveries').delete(key);
+        // Also bound recovery storage across many different room identifiers.
+        const remainingKeys = await tx.objectStore('recoveries').getAllKeys();
+        const remaining = await tx.objectStore('recoveries').getAll();
+        let total = remaining.reduce((bytes, copy) => bytes + new TextEncoder().encode(copy.scene).byteLength, 0);
+        let count = remaining.length;
+        for (let index = 0; index < remaining.length && (count > 12 || total > 3 * MAX_SCENE_BYTES); index++) {
+          await tx.objectStore('recoveries').delete(remainingKeys[index]);
+          total -= new TextEncoder().encode(remaining[index].scene).byteLength; count--;
+        }
       }
       const draft: Draft = { schemaVersion: 1, revision: expectedRevision + 1, scene };
       await tx.objectStore('boards').put(draft, this.boardKey);

@@ -1,4 +1,5 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile, readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { performance } from 'node:perf_hooks';
 import { createRelay } from '../../apps/relay/server.ts';
 import { rectangle } from '../browser/fixtures.ts';
@@ -7,6 +8,7 @@ import type { Update } from '../../packages/protocol/index.ts';
 import type { Socket } from 'socket.io-client';
 
 const duration = Number(process.env.SOAK_SECONDS ?? 1800) * 1000;
+const sourceHashes = Object.fromEntries(await Promise.all(['apps/relay/server.ts', 'packages/protocol/index.ts', 'tests/relay/soak.ts'].map(async path => [path, createHash('sha256').update(await readFile(path)).digest('hex')])));
 async function scenario(count: number) {
   const relay = createRelay({ origins: [ORIGIN] }); const url = `http://127.0.0.1:${await relay.listen()}`;
   const start = performance.now(), cpu = process.cpuUsage(); const errors: string[] = [], latency: number[] = [], memory: number[] = [];
@@ -41,11 +43,11 @@ async function scenario(count: number) {
     if (!contents.every(content => content === contents[0])) errors.push('scenes-diverged');
     if (pending.size) errors.push(`unacknowledged:${pending.size}`);
     latency.sort((a, b) => a - b);
-    return { participants: count, durationSeconds: Math.round((performance.now() - start) / 1000), objects: 500, updateHzPerPeer: 1, cursorHzPerPeer: 4, acknowledgements: latency.length, p95Milliseconds: latency[Math.floor(latency.length * .95)] ?? null, forwardedBytes: relay.stats.forwardedBytes, errors, rssPeakBytes: Math.max(...memory, process.memoryUsage().rss), processCpuMicroseconds: process.cpuUsage(cpu), note: 'Real Socket.IO peers on loopback; no rendering. Both scenarios run in one process; CPU/RSS include both servers and clients. Not Azure measurements.' };
+    return { participants: count, durationSeconds: Math.round((performance.now() - start) / 1000), objects: 500, updateHzPerPeer: 1, cursorHzPerPeer: 4, acknowledgements: latency.length, p95Milliseconds: latency[Math.floor(latency.length * .95)] ?? null, outboundPayloadBytes: relay.stats.outboundPayloadBytes, errors, rssPeakBytes: Math.max(...memory, process.memoryUsage().rss), processCpuMicroseconds: process.cpuUsage(cpu), note: 'Real Socket.IO peers on loopback; no rendering. Both scenarios run in one process; CPU/RSS include both servers and clients. Outbound payload includes ACKs, Presence and snapshots, excluding WebSocket/HTTP framing and TLS. Not Azure measurements.' };
   } finally { timers.forEach(clearInterval); peers.forEach(peer => { peer.removeAllListeners(); peer.disconnect(); }); await relay.close(); }
 }
 const results = await Promise.all([scenario(2), scenario(4)]);
 await mkdir('docs/testing', { recursive: true });
-await writeFile('docs/testing/relay-soak.json', JSON.stringify({ at: new Date().toISOString(), node: process.version, results }, null, 2) + '\n');
+await writeFile('docs/testing/relay-soak.json', JSON.stringify({ at: new Date().toISOString(), node: process.version, sourceHashes, results }, null, 2) + '\n');
 console.log(JSON.stringify(results, null, 2));
 if (results.some(result => result.errors.length || result.p95Milliseconds === null || result.p95Milliseconds >= 500)) process.exitCode = 1;
