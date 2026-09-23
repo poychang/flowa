@@ -25,6 +25,13 @@ function readLink(): RoomLink | undefined {
   return params.has('room') ? { roomId: params.get('room') ?? '', token: params.get('key') ?? '' } : undefined;
 }
 function shareLink(roomId: string, token: string) { return `${location.origin}${location.pathname}#${new URLSearchParams({ room: roomId, key: token })}`; }
+function readCredentials(link?: RoomLink) {
+  if (!link) return;
+  try {
+    const cached = JSON.parse(sessionStorage.getItem(`flowa-room:${link.roomId}`) || 'null') as RoomCredentials | null;
+    return cached?.manager === link.token ? cached : undefined;
+  } catch { return undefined; }
+}
 
 function download(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
@@ -50,9 +57,7 @@ function Board({ link, navigate, beforeNavigate }: { link?: RoomLink; navigate: 
   const [ready, setReady] = useState(false);
   const [members, setMembers] = useState<Member[]>([]);
   const [name, setName] = useState(() => localStorage.getItem('flowa-name') || '訪客');
-  const [credentials, setCredentials] = useState<RoomCredentials | undefined>(() => {
-    try { return link ? JSON.parse(sessionStorage.getItem(`flowa-room:${link.roomId}`) || 'null') ?? undefined : undefined; } catch { return undefined; }
-  });
+  const [credentials, setCredentials] = useState<RoomCredentials | undefined>(() => readCredentials(link));
   const [shownLink, setShownLink] = useState('');
   const session = useRef<CollaborationSession>();
   const savedName = useRef(name);
@@ -62,6 +67,7 @@ function Board({ link, navigate, beforeNavigate }: { link?: RoomLink; navigate: 
   const blocked = useRef(false);
   const importing = useRef(false);
   const saver = useRef<Autosave>();
+  const canShareRoom = Boolean(role === 'manager' && credentials);
   if (!saver.current) saver.current = new Autosave(async scene => {
     if (blocked.current) throw new Error('已停止自動儲存，請匯出 JSON 保留目前內容。');
     parseDocument(scene);
@@ -174,12 +180,13 @@ function Board({ link, navigate, beforeNavigate }: { link?: RoomLink; navigate: 
     catch { setError('離開前儲存失敗，請先匯出目前副本。'); }
   }
   async function closeRoom() {
-    if (!credentials || !relayUrl) return;
+    if (!credentials || !relayUrl || role !== 'manager') return;
     try {
       await saver.current!.flush();
-      const response = await fetch(`${relayUrl}/rooms/${credentials.roomId}`, { method: 'DELETE', headers: { Authorization: `Bearer ${credentials.manager}` } });
+      const response = await fetch(`${relayUrl}/rooms/${credentials.roomId}`, { method: 'DELETE', headers: { Authorization: 'Bearer ' + credentials.manager } });
       if (!response.ok) throw new Error('關閉房間失敗');
-      sessionStorage.removeItem(`flowa-room:${credentials.roomId}`); setCredentials(undefined);
+      sessionStorage.removeItem(`flowa-room:${credentials.roomId}`);
+      setCredentials(undefined);
     } catch { setError('關閉房間失敗，請確認連線後重試。'); }
   }
 
@@ -240,7 +247,7 @@ function Board({ link, navigate, beforeNavigate }: { link?: RoomLink; navigate: 
       {!link ? <><label>顯示名稱 <input aria-label="顯示名稱" maxLength={40} value={name} onChange={event => setName(event.target.value)}/></label><button disabled={!relayUrl || busy || !api} onClick={() => void createRoom()}>建立協作房間</button>{!relayUrl && <small>尚未設定協作服務，仍可單人編輯。</small>}</> : <>
         <span data-testid="sync-status">{labels[syncState]}</span><span>{role === 'viewer' ? '唯讀' : role === 'manager' ? '管理者' : '編輯者'}</span>
         <span aria-label="參與者">{members.map(member => `${member.name}${member.ready ? '' : '（連線中）'}`).join('、')}</span>
-        {credentials && <><button onClick={() => void copyShare('editor')}>複製編輯連結</button><button onClick={() => void copyShare('viewer')}>複製唯讀連結</button><button onClick={() => void closeRoom()}>關閉房間</button></>}
+        {canShareRoom && <><button onClick={() => void copyShare('editor')}>複製編輯連結</button><button onClick={() => void copyShare('viewer')}>複製唯讀連結</button><button onClick={() => void closeRoom()}>關閉房間</button></>}
         {['error', 'offline'].includes(syncState) && <button onClick={() => session.current?.retry()}>重新連線</button>}
         {['expired', 'error'].includes(syncState) && <button disabled={busy || !api || !hasRoomCopy} onClick={() => void createRoom()}>以副本重新開房</button>}
         <button onClick={() => void leaveRoom()}>離開房間</button>

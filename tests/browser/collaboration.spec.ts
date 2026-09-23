@@ -80,6 +80,25 @@ test('a room never overwrites the unrelated single-user draft', async ({ page, b
   } finally { await context.close(); }
 });
 
+test('editor and viewer links in the same tab do not retain manager controls', async ({ page, browser }) => {
+  await create(page);
+  const editor = await share(page, '編輯'), viewer = await share(page, '唯讀');
+  const context = await browser.newContext(); const donor = await context.newPage();
+  try {
+    await donor.goto(editor); await expect(donor.getByTestId('sync-status')).toHaveText('協作同步完成');
+    await page.goto(editor); await expect(page.getByTestId('sync-status')).toHaveText('協作同步完成');
+    await expect(page.getByText('編輯者', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: '複製編輯連結' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: '複製唯讀連結' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: '關閉房間' })).toHaveCount(0);
+    await page.goto(viewer); await expect(page.getByTestId('sync-status')).toHaveText('協作同步完成');
+    await expect(page.getByText('唯讀', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: '複製編輯連結' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: '複製唯讀連結' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: '關閉房間' })).toHaveCount(0);
+  } finally { await context.close(); }
+});
+
 test('restart expires old credentials and preserves the local room copy', async ({ page }) => {
   await create(page); await draw(page);
   await expect.poll(async () => (await savedElements(page)).length).toBe(1);
