@@ -66,9 +66,17 @@ function Board({ link, navigate, beforeNavigate }: { link?: RoomLink; navigate: 
   const revision = useRef(0);
   const blocked = useRef(false);
   const importing = useRef(false);
+  const roomCopyPending = useRef(false);
   const saver = useRef<Autosave>();
   const canManageRoom = Boolean(link && role === 'manager');
   const canShareRoom = Boolean(canManageRoom && credentials);
+  async function persistRoomCopy() {
+    if (hasRoomCopy || roomCopyPending.current) return;
+    roomCopyPending.current = true;
+    try { await saver.current!.flush(); setHasRoomCopy(true); }
+    catch { /* Autosave surfaces the failure state. */ }
+    finally { roomCopyPending.current = false; }
+  }
   if (!saver.current) saver.current = new Autosave(async scene => {
     if (blocked.current) throw new Error('已停止自動儲存，請匯出 JSON 保留目前內容。');
     parseDocument(scene);
@@ -139,8 +147,9 @@ function Board({ link, navigate, beforeNavigate }: { link?: RoomLink; navigate: 
       joined: (nextRole, id) => { setRole(nextRole); selfId.current = id; }, editable: value => {
         setReady(value);
         if (value && !copyAvailable.current) {
-          copyAvailable.current = true; setHasRoomCopy(true);
+          copyAvailable.current = true;
           saver.current!.enqueue(serializeScene(api.getSceneElementsIncludingDeleted(), api.getAppState(), api.getFiles()));
+          void persistRoomCopy();
         }
       },
       members: value => { currentMembers = value; setMembers(value); updatePointers(); },
@@ -149,7 +158,7 @@ function Board({ link, navigate, beforeNavigate }: { link?: RoomLink; navigate: 
     session.current = live;
     const pointerTimer = setInterval(updatePointers, 1000);
     return () => { clearInterval(pointerTimer); live.close(); session.current = undefined; };
-  }, [api]);
+  }, [api, link, relayUrl, repository]);
 
   async function createRoom() {
     if (!api || !relayUrl || busy) return;
@@ -271,7 +280,10 @@ function Board({ link, navigate, beforeNavigate }: { link?: RoomLink; navigate: 
         if (link && (event?.clipboardData?.files.length || Object.keys(data.files ?? {}).length || data.elements?.some(element => ['image', 'embeddable', 'iframe', 'magicframe'].includes(element.type)) || data.mixedContent?.some(item => item.type === 'imageUrl'))) { setError('協作期間僅支援文字與向量圖形。'); return false; }
         return true;
       }} onPointerUpdate={({ pointer }) => session.current?.pointer(pointer)} viewModeEnabled={busy || Boolean(link && (role === 'viewer' || (!ready && !['offline', 'expired', 'error'].includes(syncState))))} onChange={(elements, appState, files) => {
-        if (!blocked.current && !importing.current && copyAvailable.current) saver.current!.enqueue(serializeScene(elements, appState, files));
+        if (!blocked.current && !importing.current && copyAvailable.current) {
+          saver.current!.enqueue(serializeScene(elements, appState, files));
+          if (link && !hasRoomCopy) void persistRoomCopy();
+        }
         session.current?.changed();
       }}><MainMenu><MainMenu.DefaultItems.ToggleTheme/><MainMenu.DefaultItems.ChangeCanvasBackground/><MainMenu.DefaultItems.Help/></MainMenu></Excalidraw> : <div className="loading">正在開啟你的畫布…</div>}
       {link && !hasRoomCopy && <div className="room-placeholder" role="status">{['error', 'expired'].includes(syncState) ? '無法取得房間內容。請向持有副本的人取得新的分享連結。' : '等待在線編輯者提供初始內容…'}</div>}

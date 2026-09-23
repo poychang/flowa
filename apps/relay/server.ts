@@ -180,7 +180,7 @@ export function createRelay(options: RelayOptions) {
       room.versions = next;
       room.seen.set(key, { hash: fingerprint, seq: update.seq });
       if (room.seen.size > 256) room.seen.delete(room.seen.keys().next().value!);
-      room.pending.set(update.seq, { update, waiting: new Set([...room.members.values()].filter(item => item.ready).map(item => item.id)), bytes, at: now() });
+      room.pending.set(update.seq, { update, waiting: new Set([...room.members.values()].filter(item => item.ready && item.id !== socket.id).map(item => item.id)), bytes, at: now() });
       io.to(room.id).emit('elements-update', update); stats.acceptedUpdates++; stats.forwardedBytes += bytes * room.members.size;
       return { seq: update.seq };
     });
