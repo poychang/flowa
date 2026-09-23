@@ -2,7 +2,7 @@
 
 日期：2026-09-23。Windows、本機 loopback、Node.js 24.19.0、pnpm 11.19.0、Playwright Chromium。功能分支為 `feat/local-collaboration`。
 
-功能及導航修正提交 `79271c2` 亦通過 GitHub Actions Ubuntu 的完整檢查：[Check #2](https://github.com/poychang/flowa/actions/runs/35793809409)。CI 包含型別、13 項單元、7 項 relay、27 項 Chromium 與前後端建置，不執行 30 分鐘量測。
+合併提交 `938a028` 亦通過 GitHub Actions Ubuntu 的完整檢查：[Check #9](https://github.com/poychang/flowa/actions/runs/35812185699)。CI 包含型別、13 項單元、8 項 relay、28 項 Chromium 與前後端建置，不執行 30 分鐘量測。
 
 ## 自動化與操作檢查
 
@@ -10,8 +10,8 @@
 | --- | --- |
 | `pnpm typecheck` | 通過，包含前端、relay、協定與測試 TypeScript |
 | `pnpm test` | 13 項通過：格式限制、草稿遷移、競爭、重試、交易回滾、房間隔離及恢復資料數量／總位元組上限 |
-| `pnpm test:relay` | 7 項通過：權限、房間憑證隔離、Origin、容量競爭、來源中斷、快照／物件限制、ACK 與緩衝／期限 |
-| `pnpm test:e2e` | 27 項通過：6 項單人、8 項 PoC、13 項真實 relay 整合 |
+| `pnpm test:relay` | 8 項通過：權限、房間憑證隔離、Origin、容量競爭、來源中斷、快照／物件限制、ACK 與緩衝／期限 |
+| `pnpm test:e2e` | 28 項通過：6 項單人、8 項 PoC、15 項真實 relay 整合 |
 | `pnpm build` | 通過；仍有第三方 `use client` 與大型 chunk 警告 |
 | `pnpm build:relay` | 通過；輸出的 JavaScript 可啟動，`/healthz` 回應 protocol 2 |
 | `pnpm dev:all` | 前端 5173、relay 3001 實際啟動並回應 HTTP 200；中止後服務結束 |
@@ -30,7 +30,7 @@
 
 出站 payload 計入更新、ACK、成員、游標與快照的 Engine.IO message data；不含 HTTP/WebSocket framing、握手部分或 TLS 開銷，不能視為帳單頻寬。CPU/RSS 是同一個 Node 行程內兩個 relay 加所有測試用戶端的合計，兩列取樣時間稍有不同，不能加總或當成單一 relay 成本。沒有瀏覽器繪製、WAN 或 Azure F1。
 
-## 30 分鐘量測結果
+## 歷史版本的 30 分鐘量測結果
 
 | 參與者 | 實際時長 | 已確認增量 | p95 | 出站 payload | 錯誤 |
 | --- | --- | --- | --- | --- | --- |
@@ -38,6 +38,8 @@
 | 4 人 | 1,801 秒 | 7,144 | 27.44 ms | 23,002,236 bytes（21.94 MiB） | 0 |
 
 兩組最終內容完全一致、待確認集合為空，p95 均低於 500ms。共用行程 CPU 約 84.47 秒、最高 RSS 約 193.60 MiB；這些包含兩組測試用戶端與 relay，不能分攤或外推成 Azure 配額結論。測試期間工作站也執行前端回歸與建置，並非隔離的效能基準環境。
+
+以下長測早於後續 relay 修正，僅代表當時來源版本，尚未重跑最新版長測。
 
 已逐一核對原始 JSON 中 relay、共享協定及量測腳本的 SHA-256，與提交工作副本相符。此數字來自完整 30 分鐘實測，未以短時間結果外推。
 

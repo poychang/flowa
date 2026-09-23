@@ -2,7 +2,7 @@
 
 更新日期：2026-09-23。本階段已將多人協作接到正式畫布，提供可在本機執行的 Node / Socket.IO relay；尚未完成完整 MVP、PWA 或雲端部署。
 
-工作副本位於 `C:/Users/Nova/Documents/Codex/2026-09-22/flowa`，規格來源為桌面 `code/flowa` 的文件。GitHub 為 https://github.com/poychang/flowa ，本階段使用 `feat/local-collaboration` 分支與 PR，不直接合併 main。
+工作副本位於 `C:/Users/Nova/Documents/Codex/2026-09-22/flowa`，規格來源為桌面 `code/flowa` 的文件。GitHub 為 https://github.com/poychang/flowa ，多人協作已透過 PR #1 合併至 main（938a028），包含其後的角色憑證與 ACK 連續性修正。
 
 ## 啟動與驗證
 
@@ -33,14 +33,14 @@ pnpm build:relay
 - 房間副本與單人草稿隔離；失效房間可從已有副本重開，不把載入失敗當成空白文件。
 - GitHub Actions 驗證工作流程；30 分鐘量測另由手動命令執行。
 
-## 驗證結果
+## 驗證結果（main 938a028）
 
 - 13 項單元測試通過：格式、遷移、儲存競爭／重試、交易回滾、恢復資料上限與房間隔離。
-- 7 項真實 relay 測試通過：角色、錯誤憑證／來源、容量競爭、分片與物件限制、ACK 重送、來源離線、逾時與緩衝上限。
-- 27 項 Chromium 測試通過：6 項原有單人、8 項同步 PoC、13 項正式畫布搭配真實 relay，包括唯讀、斷線編輯、重連備份失敗、服務重啟、500／2,000 物件、快照交錯、節點與綁定箭頭實際拖曳、窄螢幕與失效連結保護。
+- 8 項真實 relay 測試通過：角色、錯誤憑證／來源、容量競爭、分片與物件限制、ACK 重送、來源離線、逾時與緩衝上限。
+- 28 項 Chromium 測試通過：6 項原有單人、8 項同步 PoC、15 項正式畫布搭配真實 relay，包括唯讀、斷線編輯、重連備份失敗、服務重啟、500／2,000 物件、快照交錯、節點與綁定箭頭實際拖曳、窄螢幕與失效連結保護。
 - TypeScript、前端建置與 relay 建置通過。前端仍有第三方 `use client` 與大於 500 kB chunk 的既有警告。
 - 已檢視桌面及 390px 畫面。PNG/SVG 未做逐像素比對。
-- 2 人與 4 人各 30 分鐘量測：結果與測試方法見 [驗證報告](docs/testing/local-collaboration.md)，原始數據見 [relay-soak.json](docs/testing/relay-soak.json)。
+- 歷史版本的 2 人與 4 人各 30 分鐘量測（早於最新 relay 修正，非最新版長測）：結果與測試方法見 [驗證報告](docs/testing/local-collaboration.md)，原始數據見 [relay-soak.json](docs/testing/relay-soak.json)。
 
 ## 限制與下一階段
 
