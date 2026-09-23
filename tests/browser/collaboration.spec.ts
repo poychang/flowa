@@ -99,6 +99,21 @@ test('editor and viewer links in the same tab do not retain manager controls', a
   } finally { await context.close(); }
 });
 
+test('a manager link in a fresh tab can close the room without cached share credentials', async ({ page, browser }) => {
+  await create(page);
+  const manager = page.url();
+  const context = await browser.newContext(); const managerPage = await context.newPage();
+  try {
+    await managerPage.goto(manager); await expect(managerPage.getByTestId('sync-status')).toHaveText('協作同步完成');
+    await expect(managerPage.getByText('管理者', { exact: true })).toBeVisible();
+    await expect(managerPage.getByRole('button', { name: '複製編輯連結' })).toHaveCount(0);
+    await expect(managerPage.getByRole('button', { name: '複製唯讀連結' })).toHaveCount(0);
+    await expect(managerPage.getByRole('button', { name: '關閉房間' })).toBeVisible();
+    await managerPage.getByRole('button', { name: '關閉房間' }).click();
+    await expect(page.getByTestId('sync-status')).toHaveText('房間失效');
+  } finally { await context.close(); }
+});
+
 test('restart expires old credentials and preserves the local room copy', async ({ page }) => {
   await create(page); await draw(page);
   await expect.poll(async () => (await savedElements(page)).length).toBe(1);
