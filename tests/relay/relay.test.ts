@@ -31,6 +31,25 @@ test('rooms authenticate, deny viewer writes and cross-room access, and distingu
   } finally { await server.close(); }
 });
 
+test('sync-ready and applied ACK must follow the server-tracked contiguous sequence', async () => {
+  const server = createRelay({ origins: [ORIGIN] }); const url = `http://127.0.0.1:${await server.listen()}`;
+  try {
+    const room = await roomAt(url);
+    const owner = await connect(url, room); await initialize(owner, [rectangle('base')]);
+    const guest = await connect(url, room, 'editor');
+    const request = once(owner, 'snapshot-request'); const incoming = once(guest, 'snapshot-meta');
+    await rpc(guest, 'sync-start', {}); await upload(owner, await request, [rectangle('base')]); const meta = await incoming;
+    await rpc(owner, 'elements-update', update([rectangle('base', { version: 2 })]));
+    await assert.rejects(rpc(guest, 'sync-ready', { transferId: meta.transferId, seq: meta.baseSeq + 1 }), /invalid-ready/);
+    await rpc(guest, 'applied', { seq: meta.baseSeq + 1 });
+    await rpc(guest, 'sync-ready', { transferId: meta.transferId, seq: meta.baseSeq + 1 });
+    const first = await rpc(owner, 'elements-update', update([rectangle('base', { version: 3 })]));
+    const second = await rpc(owner, 'elements-update', update([rectangle('base', { version: 4 })]));
+    await assert.rejects(rpc(guest, 'applied', { seq: second.seq }), /invalid-ack/);
+    await rpc(guest, 'applied', { seq: first.seq }); await rpc(guest, 'applied', { seq: second.seq });
+  } finally { await server.close(); }
+});
+
 test('global capacity includes viewers and releases disconnected connections', async () => {
   const server = createRelay({ origins: [ORIGIN] }); const url = `http://127.0.0.1:${await server.listen()}`;
   try {

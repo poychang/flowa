@@ -104,6 +104,7 @@ export function createRelay(options: RelayOptions) {
     socket.conn.on('packetCreate', packet => { if (packet.data) stats.outboundPayloadBytes += typeof packet.data === 'string' ? Buffer.byteLength(packet.data) : Buffer.byteLength(packet.data as Buffer); });
     const room = rooms.get(socket.data.roomId)!;
     const member: Member = { id: socket.id, name: socket.data.name, role: socket.data.role, ready: false, color: ['#1971c2', '#e03131', '#2f9e44', '#9c36b5'][room.members.size % 4] };
+    socket.data.appliedSeq = room.seq;
     room.members.set(socket.id, member); socket.join(room.id); members(room);
     socket.emit('joined', { id: socket.id, role: member.role, seq: room.seq, initialized: room.initialized });
     function handler(name: string, action: (value: any) => unknown) {
@@ -144,17 +145,18 @@ export function createRelay(options: RelayOptions) {
         const target = io.sockets.sockets.get(transfer.target);
         if (!target) throw new Error('target-disconnected');
         target.data.snapshotSeq = transfer.meta.baseSeq;
+        target.data.appliedSeq = transfer.meta.baseSeq;
         target.emit('snapshot-meta', transfer.meta);
         transfer.parts.forEach((data, index) => { target.emit('snapshot-chunk', { transferId: transfer.id, index, data }); stats.forwardedBytes += data.length; });
         room.transfers.delete(transfer.id);
       }
     });
     handler('sync-ready', value => {
-      if (value?.transferId !== socket.data.transferId || !Number.isSafeInteger(value?.seq) || socket.data.snapshotSeq === undefined || value.seq < socket.data.snapshotSeq || value.seq > room.seq) throw new Error('invalid-ready');
-      if (value.seq !== room.seq) return { ready: false, seq: room.seq };
+      if (value?.transferId !== socket.data.transferId || !Number.isSafeInteger(value?.seq) || socket.data.snapshotSeq === undefined || !Number.isSafeInteger(socket.data.appliedSeq) || value.seq !== socket.data.appliedSeq || value.seq < socket.data.snapshotSeq || value.seq > room.seq) throw new Error('invalid-ready');
+      if (socket.data.appliedSeq !== room.seq) return { ready: false, seq: room.seq };
       member.ready = true;
       // The snapshot plus buffered deltas also acknowledges earlier pending work.
-      for (const [seq, pending] of room.pending) if (seq <= value.seq) {
+      for (const [seq, pending] of room.pending) if (seq <= socket.data.appliedSeq) {
         pending.waiting.delete(socket.id);
         if (!pending.waiting.size) { io.to(pending.update.sender).emit('sync-ack', { id: pending.update.id, seq }); room.pending.delete(seq); }
       }
@@ -177,7 +179,10 @@ export function createRelay(options: RelayOptions) {
       return { seq: update.seq };
     });
     handler('applied', value => {
-      if (!Number.isSafeInteger(value?.seq)) throw new Error('invalid-ack');
+      if (!Number.isSafeInteger(value?.seq) || !Number.isSafeInteger(socket.data.appliedSeq) || value.seq > room.seq) throw new Error('invalid-ack');
+      if (value.seq <= socket.data.appliedSeq) return;
+      if (value.seq !== socket.data.appliedSeq + 1) throw new Error('invalid-ack');
+      socket.data.appliedSeq = value.seq;
       const pending = room.pending.get(value.seq);
       pending?.waiting.delete(socket.id);
       if (pending && !pending.waiting.size) {
