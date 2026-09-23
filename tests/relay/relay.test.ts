@@ -65,6 +65,7 @@ test('no source, malformed scene, origin, snapshot timeout and room expiry are e
   let clock = Date.now(); const server = createRelay({ origins: [ORIGIN], roomMs: 10000, snapshotMs: 100, now: () => clock }); const url = `http://127.0.0.1:${await server.listen()}`;
   try {
     assert.equal((await fetch(`${url}/rooms`, { method: 'POST', headers: { Origin: 'https://evil.invalid' } })).status, 403);
+    assert.equal((await fetch(`${url}/rooms/missing`, { method: 'DELETE', headers: { Origin: ORIGIN, Authorization: '******' } })).status, 404);
     const room = await roomAt(url); const guest = await connect(url, room, 'editor');
     await assert.rejects(rpc(guest, 'sync-start', {}), /no-snapshot-source/);
     const owner = await connect(url, room); const timedout = once(owner, 'sync-error');
@@ -73,7 +74,9 @@ test('no source, malformed scene, origin, snapshot timeout and room expiry are e
     await assert.rejects(rpc(owner, 'elements-update', update([rectangle('bad', { type: 'image' })])), /invalid-payload/);
     await assert.rejects(rpc(owner, 'elements-update', update([rectangle('bad', { x: null })])), /invalid-payload/);
     await assert.rejects(rpc(owner, 'elements-update', update([rectangle('bad', { text: 'x'.repeat(255 * 1024) })])), /invalid-payload|payload-too-large/);
-    const closed = once(owner, 'room-closed'); clock += 10001; server.sweep(); await closed;
+    const closed = once(owner, 'room-closed'); clock += 10001;
+    assert.equal((await fetch(`${url}/rooms/${room.roomId}`, { method: 'DELETE', headers: { Origin: ORIGIN, Authorization: 'Bearer ' + room.manager } })).status, 410);
+    await closed;
     await assert.rejects(connect(url, room), /room-expired/);
   } finally { await server.close(); }
 });

@@ -57,12 +57,18 @@ export function createRelay(options: RelayOptions) {
       }
       const match = req.url?.match(/^\/rooms\/([\w-]+)$/);
       if (req.method === 'DELETE' && match) {
-        const room = validRoom(match[1]); const token = req.headers.authorization?.replace(/^Bearer /, '') ?? '';
+        const room = rooms.get(match[1]);
+        if (!room) { reply(404, { error: 'not-found' }); return; }
+        if (now() >= room.expiresAt) { closeRoom(room); reply(410, { error: 'room-expired' }); return; }
+        const token = req.headers.authorization?.replace(/^Bearer /, '') ?? '';
         if (roleFor(room, token) !== 'manager') { reply(403, { error: 'unauthorized' }); return; }
         closeRoom(room); reply(200, { ok: true }); return;
       }
       reply(404, { error: 'not-found' });
-    } catch (error) { reply(429, { error: error instanceof Error ? error.message : 'invalid-request' }); }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'invalid-request';
+      reply(['rate-limited', 'capacity-exceeded'].includes(message) ? 429 : 400, { error: message });
+    }
   });
   const io = new Server(http, { transports: ['websocket'], maxHttpBufferSize: LIMITS.packet, connectTimeout: 5000,
     allowRequest: (req, callback) => callback(null, Boolean(req.headers.origin && options.origins.includes(req.headers.origin))),
@@ -196,7 +202,10 @@ export function createRelay(options: RelayOptions) {
     });
     socket.on('disconnect', () => {
       room.members.delete(socket.id); if (!room.members.size) room.emptyAt = now();
-      for (const transfer of room.transfers.values()) if (transfer.target === socket.id || transfer.donor === socket.id) failTransfer(room, transfer, 'source-disconnected');
+      for (const transfer of room.transfers.values()) {
+        if (transfer.donor === socket.id) failTransfer(room, transfer, 'source-disconnected');
+        else if (transfer.target === socket.id) room.transfers.delete(transfer.id);
+      }
       for (const [seq, pending] of room.pending) {
         pending.waiting.delete(socket.id);
         if (!pending.waiting.size) { io.to(pending.update.sender).emit('sync-ack', { id: pending.update.id, seq }); room.pending.delete(seq); }
