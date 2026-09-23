@@ -1,0 +1,45 @@
+{
+  "at": "2026-09-22T22:50:47.473Z",
+  "node": "v24.19.0",
+  "sourceHashes": {
+    "apps/relay/server.ts": "2242b45c773302a6b7909af5fb1c30766c745ffc65e4066f3d95121fe5e551e8",
+    "packages/protocol/index.ts": "455e7f2429180b95d9a8ce21c984309f871a3695c07acd542ff86feee8ea18db",
+    "tests/relay/soak.ts": "61be63fb268cf19c05a38bf8b3d6241c1b612f09563509386c53f1e03a695086"
+  },
+  "results": [
+    {
+      "participants": 2,
+      "durationSeconds": 1801,
+      "objects": 500,
+      "updateHzPerPeer": 1,
+      "cursorHzPerPeer": 4,
+      "acknowledgements": 3573,
+      "p95Milliseconds": 28.173400000028778,
+      "outboundPayloadBytes": 5868875,
+      "errors": [],
+      "rssPeakBytes": 201998336,
+      "processCpuMicroseconds": {
+        "user": 56672000,
+        "system": 27797000
+      },
+      "note": "Real Socket.IO peers on loopback; no rendering. Both scenarios run in one process; CPU/RSS include both servers and clients. Outbound payload includes ACKs, Presence and snapshots, excluding WebSocket/HTTP framing and TLS. Not Azure measurements."
+    },
+    {
+      "participants": 4,
+      "durationSeconds": 1801,
+      "objects": 500,
+      "updateHzPerPeer": 1,
+      "cursorHzPerPeer": 4,
+      "acknowledgements": 7144,
+      "p95Milliseconds": 27.43959999992512,
+      "outboundPayloadBytes": 23002236,
+      "errors": [],
+      "rssPeakBytes": 203001856,
+      "processCpuMicroseconds": {
+        "user": 56656000,
+        "system": 27797000
+      },
+      "note": "Real Socket.IO peers on loopback; no rendering. Both scenarios run in one process; CPU/RSS include both servers and clients. Outbound payload includes ACKs, Presence and snapshots, excluding WebSocket/HTTP framing and TLS. Not Azure measurements."
+    }
+  ]
+}

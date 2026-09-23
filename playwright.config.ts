@@ -12,5 +12,6 @@ export default defineConfig({
     url: 'http://127.0.0.1:5180',
     reuseExistingServer: false,
     timeout: 120000,
+    env: { VITE_RELAY_URL: 'http://127.0.0.1:3002' },
   },
 });

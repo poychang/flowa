@@ -9,13 +9,20 @@
     "preview": "vite preview --host 127.0.0.1",
     "test": "node --experimental-transform-types --test tests/unit/*.test.ts",
     "typecheck": "tsc --noEmit",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "dev:relay": "node --env-file-if-exists=.env.local --experimental-transform-types apps/relay/main.ts",
+    "test:relay": "node --experimental-transform-types --test tests/relay/*.test.ts",
+    "build:relay": "tsc -p tsconfig.relay.json",
+    "dev:all": "node --env-file-if-exists=.env.local scripts/dev.mjs"
   },
   "dependencies": {
     "@excalidraw/excalidraw": "0.18.1",
     "idb": "8.0.3",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "socket.io": "4.8.1",
+    "socket.io-client": "4.8.1",
+    "zod": "3.25.76"
   },
   "devDependencies": {
     "@playwright/test": "1.55.1",
