@@ -44,8 +44,8 @@ test('draw, autosave, reload, JSON restore and image exports', async ({ page }, 
   }
   await imported(page, scene([rectangle('restored', { strokeColor: '#e03131' })]));
   await expect.poll(async () => JSON.parse((await readDraft(page)).scene).elements[0].id).toBe('restored');
-  await expect(page.getByRole('button', { name: '匯出匯入前副本' })).toBeVisible();
-  const recoveryEvent = page.waitForEvent('download'); await page.getByRole('button', { name: '匯出匯入前副本' }).click();
+  await expect(page.getByRole('button', { name: '匯出恢復副本' })).toBeVisible();
+  const recoveryEvent = page.waitForEvent('download'); await page.getByRole('button', { name: '匯出恢復副本' }).click();
   expect(JSON.parse((await downloadText(await recoveryEvent)).toString()).elements[0].id).toBe(before[0].id);
   await page.screenshot({ path: info.outputPath('flowa-canvas.png'), fullPage: true });
 });
