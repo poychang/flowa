@@ -26,7 +26,7 @@ async function share(page: Page, type: '編輯' | '唯讀') {
   return page.getByLabel('分享連結', { exact: true }).inputValue();
 }
 
-test('real relay synchronizes drawing, readonly guest and room close', async ({ page, browser }, info) => {
+test('real relay synchronizes drawing, readonly guest and room close', { tag: '@cross-browser' }, async ({ page, browser }, info) => {
   await create(page);
   const edit = await share(page, '編輯'), view = await share(page, '唯讀');
   const editorContext = await browser.newContext(), viewerContext = await browser.newContext();
@@ -49,7 +49,7 @@ test('real relay synchronizes drawing, readonly guest and room close', async ({ 
   } finally { await editorContext.close(); await viewerContext.close(); }
 });
 
-test('offline edits merge after reconnect and keep an exportable recovery copy', async ({ page, browser }) => {
+test('offline edits merge after reconnect and keep an exportable recovery copy', { tag: '@cross-browser' }, async ({ page, browser }) => {
   await create(page); await draw(page);
   const context = await browser.newContext(); const editor = await context.newPage();
   try {

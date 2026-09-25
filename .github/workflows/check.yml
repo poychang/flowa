@@ -21,8 +21,9 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm test:relay
-      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm exec playwright install --with-deps chromium firefox webkit
       - run: pnpm test:e2e
+      - run: pnpm test:cross-browser
       - run: pnpm build
       - run: pnpm test:pwa
       - run: pnpm build:relay
