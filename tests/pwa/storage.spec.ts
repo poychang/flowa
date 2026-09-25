@@ -43,6 +43,8 @@ test('first offline installation failure can be retried without clearing the dra
   await draw(page);
   await expect.poll(async () => JSON.parse((await draft(page))?.scene ?? '{"elements":[]}').elements.length).toBe(1);
   const saved = await draft(page);
+  expect(saved).toBeDefined();
+  if (!saved) throw new Error('Expected saved draft');
   await expect(page.getByTestId('pwa-message')).toContainText('離線資源準備失敗', { timeout: 60000 });
   await expect(page.getByTestId('offline-status')).not.toHaveText('離線可用');
   expect(await draft(page)).toMatchObject({ revision: saved.revision, scene: saved.scene });
