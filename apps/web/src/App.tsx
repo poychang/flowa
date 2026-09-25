@@ -4,6 +4,7 @@ import { Excalidraw, MainMenu, exportToBlob, exportToSvg } from '@excalidraw/exc
 import type { ExcalidrawImperativeAPI, ExcalidrawInitialDataState } from '@excalidraw/excalidraw/types';
 import { BoardRepository } from './storage';
 import { Autosave } from './autosave';
+import { PwaControls } from './pwa';
 import { parseDocument } from './document';
 import { serializeScene, deserializeScene } from './scene';
 import { CollaborationSession, type RoomLink, type SyncState } from './sync/session';
@@ -49,6 +50,8 @@ function Board({ link, navigate, beforeNavigate }: { link?: RoomLink; navigate: 
   const [status, setStatus] = useState('讀取本機草稿…');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const updateLock = useRef(false);
   const [hasRecovery, setHasRecovery] = useState(false);
   const [hasRoomCopy, setHasRoomCopy] = useState(!link);
   const copyAvailable = useRef(!link);
@@ -91,7 +94,7 @@ function Board({ link, navigate, beforeNavigate }: { link?: RoomLink; navigate: 
     let mounted = true;
     beforeNavigate.current = async () => {
       try {
-        if (blocked.current || importing.current) throw new Error('storage-unavailable');
+        if (blocked.current || importing.current || updateLock.current) throw new Error('storage-unavailable');
         await saver.current!.flush(); return true;
       } catch { setError('切換前儲存失敗，已留在原畫布，請先匯出目前內容。'); return false; }
     };
@@ -122,7 +125,7 @@ function Board({ link, navigate, beforeNavigate }: { link?: RoomLink; navigate: 
   }, []);
 
   useEffect(() => {
-    if (!api || !link || blocked.current) return;
+    if (!api || !link || blocked.current || updating) return;
     if (!relayUrl) { setSyncState('error'); setError('尚未設定協作服務，無法加入房間；已保留本機副本。'); return; }
     let currentMembers: Member[] = [];
     const pointers = new Map<string, { x: number; y: number; at: number }>();
@@ -158,7 +161,25 @@ function Board({ link, navigate, beforeNavigate }: { link?: RoomLink; navigate: 
     session.current = live;
     const pointerTimer = setInterval(updatePointers, 1000);
     return () => { clearInterval(pointerTimer); live.close(); session.current = undefined; };
-  }, [api, link, relayUrl, repository]);
+  }, [api, link, relayUrl, repository, updating]);
+
+  async function prepareUpdate() {
+    if (!api || blocked.current || importing.current || busy || updateLock.current) throw new Error('畫布尚未就緒，請先完成操作或匯出備份。');
+    const state = api.getAppState();
+    if (state.editingTextElement || state.resizingElement || state.newElement || state.selectedElementsAreBeingDragged) throw new Error('請先結束文字輸入或拖曳，再更新。');
+    if (link && !copyAvailable.current) throw new Error('尚未取得房間內容，請先離開房間再更新。');
+    updateLock.current = true; setUpdating(true); setBusy(true); session.current?.close();
+    const resume = () => { updateLock.current = false; setUpdating(false); setBusy(false); };
+    try {
+      saver.current!.enqueue(serializeScene(api.getSceneElementsIncludingDeleted(), state, api.getFiles()));
+      await saver.current!.flush();
+      const current = await repository.read();
+      if (!current || current.revision !== revision.current) throw new Error('另一個分頁已更新內容。');
+      const checkpoint = await repository.write(current.scene, revision.current, true);
+      revision.current = checkpoint.revision; setHasRecovery(true);
+      return resume;
+    } catch { resume(); throw new Error('更新前儲存或備份失敗，已停止更新；請先匯出 JSON。'); }
+  }
 
   async function createRoom() {
     if (!api || !relayUrl || busy) return;
@@ -243,27 +264,29 @@ function Board({ link, navigate, beforeNavigate }: { link?: RoomLink; navigate: 
     } catch { setError('無法讀取恢復副本。'); }
   }
 
-  return <main>
+  return <main onKeyDownCapture={event => { if (updateLock.current) { event.preventDefault(); event.stopPropagation(); } }}>
+    {updating && <div className="update-shield">已暫停編輯，正在保存副本並更新…</div>}
     <header>
       <div className="brand"><span className="mark">f</span><div><strong>Flowa</strong><small>讓想法自然成形</small></div></div>
       <div className="state"><span className="dot"/><span role="status">{status}</span><span className="local">{link ? '多人房間' : '單人模式'}</span></div>
       <nav aria-label="檔案操作">
-        {hasRecovery && <button onClick={() => void downloadRecovery()}>{link ? '匯出同步前副本' : '匯出匯入前副本'}</button>}
+        {hasRecovery && <button onClick={() => void downloadRecovery()}>匯出恢復副本</button>}
         <button disabled={busy || !api || Boolean(link)} onClick={() => input.current?.click()}>匯入 JSON</button>
         <button disabled={!api || !hasRoomCopy} onClick={() => void exportFile('svg')}>SVG</button>
         <button disabled={!api || !hasRoomCopy} onClick={() => void exportFile('png')}>PNG</button>
         <button disabled={!api || !hasRoomCopy} className="primary" onClick={() => void exportFile('json')}>備份 JSON ↗</button>
       </nav>
     </header>
+    <PwaControls prepareUpdate={prepareUpdate}/>
     <div className="collaboration" aria-label="協作控制">
       {!link ? <><label>顯示名稱 <input aria-label="顯示名稱" maxLength={40} value={name} onChange={event => setName(event.target.value)}/></label><button disabled={!relayUrl || busy || !api} onClick={() => void createRoom()}>建立協作房間</button>{!relayUrl && <small>尚未設定協作服務，仍可單人編輯。</small>}</> : <>
         <span data-testid="sync-status">{labels[syncState]}</span><span>{role === 'viewer' ? '唯讀' : role === 'manager' ? '管理者' : '編輯者'}</span>
         <span aria-label="參與者">{members.map(member => `${member.name}${member.ready ? '' : '（連線中）'}`).join('、')}</span>
         {canShareRoom && <><button onClick={() => void copyShare('editor')}>複製編輯連結</button><button onClick={() => void copyShare('viewer')}>複製唯讀連結</button></>}
-        {canManageRoom && <button onClick={() => void closeRoom()}>關閉房間</button>}
+        {canManageRoom && <button disabled={busy} onClick={() => void closeRoom()}>關閉房間</button>}
         {['error', 'offline'].includes(syncState) && <button onClick={() => session.current?.retry()}>重新連線</button>}
         {['expired', 'error'].includes(syncState) && <button disabled={busy || !api || !hasRoomCopy} onClick={() => void createRoom()}>以副本重新開房</button>}
-        <button onClick={() => void leaveRoom()}>離開房間</button>
+        <button disabled={busy} onClick={() => void leaveRoom()}>離開房間</button>
       </>}
       {shownLink && <label>分享連結 <input aria-label="分享連結" readOnly value={shownLink} onFocus={event => event.target.select()}/></label>}
     </div>

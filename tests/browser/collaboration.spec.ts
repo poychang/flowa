@@ -60,7 +60,7 @@ test('offline edits merge after reconnect and keep an exportable recovery copy',
     await expect(editor.getByTestId('sync-status')).toHaveText('協作同步完成', { timeout: 30000 });
     await expect.poll(async () => (await savedElements(page)).filter(element => !element.isDeleted).length).toBe(3);
     await expect.poll(async () => (await savedElements(editor)).filter(element => !element.isDeleted).length).toBe(3);
-    await expect(editor.getByRole('button', { name: '匯出同步前副本' })).toBeVisible();
+    await expect(editor.getByRole('button', { name: '匯出恢復副本' })).toBeVisible();
   } finally { await context.close(); }
 });
 

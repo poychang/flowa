@@ -2,7 +2,7 @@
 
 日期：2026-09-23。Windows、本機 loopback、Node.js 24.19.0、pnpm 11.19.0、Playwright Chromium。功能分支為 `feat/local-collaboration`。
 
-合併提交 `938a028` 亦通過 GitHub Actions Ubuntu 的完整檢查：[Check #9](https://github.com/poychang/flowa/actions/runs/35812185699)。CI 包含型別、13 項單元、8 項 relay、28 項 Chromium 與前後端建置，不執行 30 分鐘量測。
+合併提交 `938a028` 亦通過 GitHub Actions Ubuntu 的完整檢查：[Check #9](https://github.com/poychang/flowa/actions/runs/35812185699)。CI 包含型別、13 項單元、8 項 relay、29 項 Chromium 與前後端建置，不執行 30 分鐘量測。
 
 ## 自動化與操作檢查
 
@@ -11,7 +11,7 @@
 | `pnpm typecheck` | 通過，包含前端、relay、協定與測試 TypeScript |
 | `pnpm test` | 13 項通過：格式限制、草稿遷移、競爭、重試、交易回滾、房間隔離及恢復資料數量／總位元組上限 |
 | `pnpm test:relay` | 8 項通過：權限、房間憑證隔離、Origin、容量競爭、來源中斷、快照／物件限制、ACK 與緩衝／期限 |
-| `pnpm test:e2e` | 28 項通過：6 項單人、8 項 PoC、15 項真實 relay 整合 |
+| `pnpm test:e2e` | 29 項通過：6 項單人、8 項 PoC、15 項真實 relay 整合 |
 | `pnpm build` | 通過；仍有第三方 `use client` 與大型 chunk 警告 |
 | `pnpm build:relay` | 通過；輸出的 JavaScript 可啟動，`/healthz` 回應 protocol 2 |
 | `pnpm dev:all` | 前端 5173、relay 3001 實際啟動並回應 HTTP 200；中止後服務結束 |
@@ -45,4 +45,4 @@
 
 ## 後續驗收
 
-尚未驗證 PWA、Safari/iPad/觸控筆、裝置鎖屏、WAN 故障、長時間瀏覽器渲染，以及 Azure F1 配額／冷啟動。同步傳輸未端對端加密，這些測試不等同公開服務安全稽核。此階段沒有建立任何 Azure 或付費資源。
+此報告未驗證 PWA（後續實作與測試見 [PWA 文件](../pwa.md)）；尚未驗證 Safari/iPad/觸控筆、裝置鎖屏、WAN 故障、長時間瀏覽器渲染，以及 Azure F1 配額／冷啟動。同步傳輸未端對端加密，這些測試不等同公開服務安全稽核。此階段沒有建立任何 Azure 或付費資源。
