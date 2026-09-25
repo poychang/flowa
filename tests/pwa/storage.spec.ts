@@ -1,11 +1,12 @@
 import { test, expect, type Page } from '@playwright/test';
+import type { Draft } from '../../apps/web/src/storage.ts';
 
 async function draw(page: Page) {
   await page.getByTitle('長方形 — R 或 2', { exact: true }).click();
   await page.mouse.move(650, 450); await page.mouse.down(); await page.mouse.move(800, 550, { steps: 5 }); await page.mouse.up();
 }
 
-async function draft(page: Page) {
+async function draft(page: Page): Promise<Draft | undefined> {
   return page.evaluate(async () => {
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
       const r = indexedDB.open('flowa');
@@ -13,7 +14,7 @@ async function draft(page: Page) {
       r.onerror = () => reject(r.error);
       r.onblocked = () => reject(new Error('blocked'));
     });
-    return new Promise<any>((resolve, reject) => {
+    return new Promise<Draft | undefined>((resolve, reject) => {
       const tx = db.transaction('boards');
       tx.onerror = () => reject(tx.error);
       const r = tx.objectStore('boards').get('draft');
