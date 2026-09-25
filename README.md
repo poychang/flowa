@@ -97,7 +97,7 @@ pnpm dev:all
 
 開啟 `http://127.0.0.1:5173`，輸入顯示名稱後建立房間，再把「編輯連結」或「唯讀連結」貼到另一個瀏覽器環境。預設只綁定本機；其他裝置無法使用此 loopback 網址。僅開發單人畫布可執行 `pnpm dev`。
 
-目前通過 13 項單元、8 項 relay、29 項一般 Chromium 與 7 項正式版 PWA 測試。完整命令、30 分鐘量測與尚未完成項目見 [DEVELOPMENT.md](./DEVELOPMENT.md)，設定與故障處理見 [協作操作文件](docs/collaboration.md)。
+已合併 main（7a47827）通過 13 項單元、8 項 relay、29 項一般 Chromium 與 7 項正式版 PWA 測試。完整命令、30 分鐘量測與尚未完成項目見 [DEVELOPMENT.md](./DEVELOPMENT.md)，設定與故障處理見 [協作操作文件](docs/collaboration.md)。新增 Firefox／WebKit 各 8 項核心回歸，命令及平台驗證範圍見 [跨瀏覽器驗證](docs/testing/cross-browser.md)。
 
 單人模式須能在協作後端未設定或不可用時獨立運作。正式託管使用 HTTPS／WSS，瀏覽器直接連至 F1，不依賴 Static Web Apps 的 API 代理。
 

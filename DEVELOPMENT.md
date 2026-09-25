@@ -1,8 +1,8 @@
 # Flowa 開發狀態
 
-更新日期：2026-09-25。本階段完成 PWA 安裝入口、正式版離線啟動、自託管字型與更新前資料保護；完整 MVP 的跨裝置驗收與雲端部署仍未完成。
+更新日期：2026-09-25。PWA 與離線保護已合併，本階段補齊跨瀏覽器核心回歸測試；完整 MVP 的跨裝置驗收與雲端部署仍未完成。
 
-工作副本位於 `C:/Users/Nova/Documents/Codex/2026-09-22/flowa`，規格來源為桌面 `code/flowa` 的文件。GitHub 為 https://github.com/poychang/flowa ，多人協作已透過 PR #1 合併至 main（938a028），包含其後的角色憑證與 ACK 連續性修正。
+工作副本位於 `C:/Users/Nova/Documents/Codex/2026-09-22/flowa`，規格來源為桌面 `code/flowa` 的文件。GitHub 為 https://github.com/poychang/flowa ，多人協作（PR #1）及 PWA（PR #2）已合併至 main（7a47827）；包括字型初始化順序與 PWA 儲存測試的後續修正。
 
 ## 啟動與驗證
 
@@ -14,8 +14,9 @@ pnpm dev:all
 pnpm typecheck
 pnpm test
 pnpm test:relay
-pnpm exec playwright install chromium
+pnpm exec playwright install chromium firefox webkit
 pnpm test:e2e
+pnpm test:cross-browser
 pnpm build
 pnpm test:pwa
 pnpm build:relay
@@ -33,9 +34,12 @@ pnpm build:relay
 - 分片快照、sequence 追趕、增量合併、套用後確認、重送去重與重連前 checkpoint。
 - 房間副本與單人草稿隔離；失效房間可從已有副本重開，不把載入失敗當成空白文件。
 - Manifest、靜態資源及字型離線快取；明確同意更新、更新前交易式副本、多分頁阻擋與持續保存請求。
+- Firefox／WebKit 核心回歸各 8 項（使用既有案例標籤），納入 GitHub Actions；平台結果見跨瀏覽器驗證文件。
 - GitHub Actions 驗證工作流程；30 分鐘量測另由手動命令執行。
 
-## 驗證結果（PWA 分支，以 main 938a028 為基底）
+## 驗證結果
+
+已合併基準 `7a47827` 通過 [GitHub Actions Check](https://github.com/poychang/flowa/actions/runs/36106598633)，涵蓋以下 57 項測試與建置。跨瀏覽器擴充範圍與結果另見 [跨瀏覽器驗證](docs/testing/cross-browser.md)。
 
 - 13 項單元測試通過：格式、遷移、儲存競爭／重試、交易回滾、恢復資料上限與房間隔離。
 - 8 項真實 relay 測試通過：角色、錯誤憑證／來源、容量競爭、分片與物件限制、ACK 重送、來源離線、逾時與緩衝上限。
