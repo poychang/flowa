@@ -7,8 +7,19 @@ async function draw(page: Page) {
 
 async function draft(page: Page) {
   return page.evaluate(async () => {
-    const db = await new Promise<IDBDatabase>(resolve => { const r = indexedDB.open('flowa'); r.onsuccess = () => resolve(r.result); });
-    return new Promise<any>(resolve => { const r = db.transaction('boards').objectStore('boards').get('draft'); r.onsuccess = () => { db.close(); resolve(r.result); }; });
+    const db = await new Promise<IDBDatabase>((resolve, reject) => {
+      const r = indexedDB.open('flowa');
+      r.onsuccess = () => resolve(r.result);
+      r.onerror = () => reject(r.error);
+      r.onblocked = () => reject(new Error('blocked'));
+    });
+    return new Promise<any>((resolve, reject) => {
+      const tx = db.transaction('boards');
+      tx.onerror = () => reject(tx.error);
+      const r = tx.objectStore('boards').get('draft');
+      r.onsuccess = () => { db.close(); resolve(r.result); };
+      r.onerror = () => reject(r.error);
+    });
   });
 }
 
