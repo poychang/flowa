@@ -22,7 +22,7 @@ async function downloadText(download: Download) {
   return Buffer.concat(chunks);
 }
 
-test('draw, autosave, reload, JSON restore and image exports', async ({ page }, info) => {
+test('draw, autosave, reload, JSON restore and image exports', { tag: '@cross-browser' }, async ({ page }, info) => {
   await page.goto('/');
   await expect(page.getByRole('button', { name: '匯入 JSON', exact: true })).toBeEnabled();
   await page.getByTitle('長方形 — R 或 2', { exact: true }).click();
@@ -50,7 +50,7 @@ test('draw, autosave, reload, JSON restore and image exports', async ({ page }, 
   await page.screenshot({ path: info.outputPath('flowa-canvas.png'), fullPage: true });
 });
 
-test('invalid import preserves existing draft and scene', async ({ page }) => {
+test('invalid import preserves existing draft and scene', { tag: '@cross-browser' }, async ({ page }) => {
   await page.goto('/'); await expect(page.getByRole('button', { name: '匯入 JSON', exact: true })).toBeEnabled();
   await imported(page, scene());
   await expect.poll(async () => JSON.parse((await readDraft(page)).scene).elements[0]?.id).toBe('original');
@@ -59,7 +59,7 @@ test('invalid import preserves existing draft and scene', async ({ page }) => {
   expect(JSON.parse((await readDraft(page)).scene).elements[0].id).toBe('original');
 });
 
-test('another tab cannot overwrite a newer draft', async ({ page, context }) => {
+test('another tab cannot overwrite a newer draft', { tag: '@cross-browser' }, async ({ page, context }) => {
   await page.goto('/'); await expect(page.getByRole('status')).toHaveText('已存於此裝置');
   const second = await context.newPage(); await second.goto('/');
   await expect(second.getByRole('status')).toHaveText('已存於此裝置');
@@ -70,7 +70,7 @@ test('another tab cannot overwrite a newer draft', async ({ page, context }) => 
   expect(JSON.parse((await readDraft(page)).scene).elements[0].id).toBe('first-tab');
 });
 
-test('corrupt local draft is preserved and never replaced with blank data', async ({ page }) => {
+test('corrupt local draft is preserved and never replaced with blank data', { tag: '@cross-browser' }, async ({ page }) => {
   await page.goto('/'); await expect(page.getByRole('status')).toHaveText('已存於此裝置');
   await page.evaluate(async () => {
     const db = await new Promise<IDBDatabase>(resolve => { const r = indexedDB.open('flowa'); r.onsuccess = () => resolve(r.result); });
@@ -80,7 +80,7 @@ test('corrupt local draft is preserved and never replaced with blank data', asyn
   expect(await readDraft(page)).toBe('broken JSON');
 });
 
-test('storage failure shows failure until retry commits successfully', async ({ page }) => {
+test('storage failure shows failure until retry commits successfully', { tag: '@cross-browser' }, async ({ page }) => {
   await page.addInitScript(() => {
     (window as any).failFlowaSave = true;
     const put = IDBObjectStore.prototype.put;
@@ -98,7 +98,7 @@ test('storage failure shows failure until retry commits successfully', async ({ 
   expect((await readDraft(page)).revision).toBe(1);
 });
 
-test('JSON backup restores in a clean browser and retains deleted elements', async ({ browser }) => {
+test('JSON backup restores in a clean browser and retains deleted elements', { tag: '@cross-browser' }, async ({ browser }) => {
   const context = await browser.newContext(); const page = await context.newPage();
   try {
     await page.goto('/'); await expect(page.getByRole('button', { name: '匯入 JSON', exact: true })).toBeEnabled();

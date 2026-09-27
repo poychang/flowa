@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page, type WebSocketRoute } from '@playwright/test';
 import { createRelay } from '../../apps/relay/server';
 import { scene, rectangle } from './fixtures';
 let relay: ReturnType<typeof createRelay>;
@@ -26,7 +26,7 @@ async function share(page: Page, type: '編輯' | '唯讀') {
   return page.getByLabel('分享連結', { exact: true }).inputValue();
 }
 
-test('real relay synchronizes drawing, readonly guest and room close', async ({ page, browser }, info) => {
+test('real relay synchronizes drawing, readonly guest and room close', { tag: '@cross-browser' }, async ({ page, browser }, info) => {
   await create(page);
   const edit = await share(page, '編輯'), view = await share(page, '唯讀');
   const editorContext = await browser.newContext(), viewerContext = await browser.newContext();
@@ -49,13 +49,28 @@ test('real relay synchronizes drawing, readonly guest and room close', async ({ 
   } finally { await editorContext.close(); await viewerContext.close(); }
 });
 
-test('offline edits merge after reconnect and keep an exportable recovery copy', async ({ page, browser }) => {
+test('offline edits merge after reconnect and keep an exportable recovery copy', { tag: '@cross-browser' }, async ({ page, browser }) => {
   await create(page); await draw(page);
   const context = await browser.newContext(); const editor = await context.newPage();
+  // Firefox's offline emulation leaves existing WebSockets alive. Explicitly
+  // cut both sides and reject reconnects while offline, retaining a real relay.
+  let offline = false;
+  const connections: { client: WebSocketRoute; server: WebSocketRoute }[] = [];
+  await context.routeWebSocket('**/socket.io/**', client => {
+    if (offline) { client.close(); return; }
+    connections.push({ client, server: client.connectToServer() });
+  });
   try {
     await editor.goto(await share(page, '編輯')); await expect(editor.getByTestId('sync-status')).toHaveText('協作同步完成');
-    await context.setOffline(true); await expect(editor.getByTestId('sync-status')).toHaveText('離線，本機編輯', { timeout: 45000 });
+    offline = true;
+    await context.setOffline(true);
+    for (const { client, server } of connections.splice(0)) { client.close(); server.close(); }
+    await expect(editor.getByTestId('sync-status')).toHaveText('離線，本機編輯', { timeout: 45000 });
     await draw(editor, 900, 600); await draw(page, 650, 700);
+    await expect.poll(async () => (await savedElements(editor)).filter(element => !element.isDeleted).length).toBe(2);
+    await expect.poll(async () => (await savedElements(page)).filter(element => !element.isDeleted).length).toBe(2);
+    expect((await savedElements(editor)).map(element => element.id).sort()).not.toEqual((await savedElements(page)).map(element => element.id).sort());
+    offline = false;
     await context.setOffline(false);
     await expect(editor.getByTestId('sync-status')).toHaveText('協作同步完成', { timeout: 30000 });
     await expect.poll(async () => (await savedElements(page)).filter(element => !element.isDeleted).length).toBe(3);
