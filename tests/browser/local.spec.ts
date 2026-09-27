@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import type { Page, Download } from '@playwright/test';
 import { rectangle, scene } from './fixtures';
+import { drawRectangle } from './draw';
 
 async function readDraft(page: Page) {
   return page.evaluate(async () => {
@@ -25,9 +26,9 @@ async function downloadText(download: Download) {
 test('draw, autosave, reload, JSON restore and image exports', { tag: '@cross-browser' }, async ({ page }, info) => {
   await page.goto('/');
   await expect(page.getByRole('button', { name: '匯入 JSON', exact: true })).toBeEnabled();
-  await page.getByTitle('長方形 — R 或 2', { exact: true }).click();
-  await page.mouse.move(600, 350); await page.mouse.down(); await page.mouse.move(850, 500, { steps: 8 }); await page.mouse.up();
-  await expect.poll(async () => JSON.parse((await readDraft(page))?.scene ?? '{"elements":[]}').elements.length).toBe(1);
+  await drawRectangle(page, 600, 350, 250, 150);
+  // A prior intermediate drag may already be saved; wait for the final geometry before reload.
+  await expect.poll(async () => JSON.parse((await readDraft(page))?.scene ?? '{"elements":[]}').elements[0]?.width ?? 0).toBeGreaterThan(200);
   await expect(page.getByRole('status')).toHaveText('已存於此裝置');
   const before = JSON.parse((await readDraft(page)).scene).elements;
   await page.reload();

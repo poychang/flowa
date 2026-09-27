@@ -55,4 +55,4 @@ Excalidraw 0.18.1 在 restore／初始化時會把元素的 `boundElements: null
 
 真實 relay 搭配 Chromium 測試初始同步、同時變更、唯讀、重連、快照交錯、綁定拖曳、房間副本隔離、relay 重啟，以及 500／2,000 物件。長時間測試使用真實 Socket.IO Node 用戶端，不包含持續瀏覽器繪製。
 
-本機延遲與 CPU/RSS 無法證明 Azure F1 配額符合需求。PWA、Safari/iPad/觸控筆、實際鎖屏恢復、WAN 延遲與雲端部署仍需下一階段驗收。細節與量測數字見 [驗證報告](../testing/local-collaboration.md)。
+本機延遲與 CPU/RSS 無法證明 Azure F1 配額符合需求。PWA 已完成 Chromium 正式建置回歸；Safari/iPad/觸控筆、實際鎖屏恢復、WAN 延遲與雲端部署仍需獨立驗收。歷史量測數字見 [驗證報告](../testing/local-collaboration.md)，目前跨裝置範圍見 [驗收清單](../testing/device-acceptance.md)。
