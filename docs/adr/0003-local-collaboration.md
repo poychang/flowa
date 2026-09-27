@@ -29,6 +29,12 @@ Origin 精確比對、全服務連線上限 4、建房與封包速率限制、�
 
 正在拖曳、繪製、調整尺寸或輸入文字時先暫存遠端增量。遠端套用使用 `CaptureUpdateAction.NEVER`，保留本機 Undo/Redo 行為。合併依 id、version，再以較小 versionNonce 決勝；同 version/nonce 卻內容不同直接停止同步。排序 index 修復會成為下一輪增量。這是整個物件層級的衝突處理，不是字元級多人文字 CRDT，並行輸入仍可能一方勝出。
 
+### 重新載入的空綁定相容性（2026-09-27）
+
+Excalidraw 0.18.1 在 restore／初始化時會把元素的 `boundElements: null` 改為 `[]`，但不增加 version／versionNonce。若逐字比較，重新載入已同步房間會誤報 `conflicting-revision`。共用 canonical 比較因此只將元素根欄位的這兩種空綁定視為等價，同時套用於元素指紋與增量去重；不改寫場景、不改封包格式，也不放寬真正的幾何、樣式、非空綁定或版本差異。巢狀 customData 不受影響。
+
+前端與 relay 應一起更新；仍開著的舊前端可能保留舊比較行為，須依 PWA 更新流程先保存再更新。混合 Chromium／WebKit 同房間重新載入及離線合併回歸見 [跨裝置驗收](../testing/device-acceptance.md)。
+
 ## 有界資源
 
 | 項目 | 限制 |

@@ -56,6 +56,15 @@ export function parseSnapshot(text: string): Element[] {
   return elementsSchema.parse(JSON.parse(text));
 }
 export function canonical(value: unknown) {
-  return JSON.stringify(value, (_key, item) => item && typeof item === 'object' && !Array.isArray(item)
+  // Normalize only element fields, not similarly named arbitrary custom data.
+  // restore() changes empty bindings without incrementing the element revision.
+  const normalize = (item: unknown) => {
+    if (item && typeof item === 'object' && 'id' in item && 'type' in item && 'boundElements' in item && item.boundElements === null)
+      return { ...item, boundElements: [] };
+    return item;
+  };
+  const normalized = value && typeof value === 'object' && 'elements' in value && Array.isArray(value.elements)
+    ? { ...value, elements: value.elements.map(normalize) } : normalize(value);
+  return JSON.stringify(normalized, (_key, item) => item && typeof item === 'object' && !Array.isArray(item)
     ? Object.fromEntries(Object.entries(item).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)) : item);
 }
