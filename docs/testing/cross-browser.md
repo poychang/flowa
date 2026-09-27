@@ -14,6 +14,8 @@ Linux CI 安裝瀏覽器時加上 `--with-deps`。`test:e2e` 保留 Chromium 完
 
 使用既有案例的 `@cross-browser` 標籤選取測試，避免複製另一套斷言。所有專案使用單一 worker，避免測試 relay 的固定連接埠互相干擾。
 
+斷線案例同時使用瀏覽器離線模式與 WebSocket 路由：明確關閉連線兩端並拒絕離線期間的重連。初輪 Ubuntu CI 發現 Firefox 的 `setOffline` 未中斷既有 WebSocket，因此不可只靠離線旗標。測試仍連接真實 relay，另驗證離線期間兩端各自保存不同內容，連線恢復後再收斂。
+
 | 核心案例 | 驗證內容 |
 | --- | --- |
 | 繪圖、自動儲存與匯出 | 滑鼠實際繪製、重新載入、JSON 還原及恢復副本、PNG/SVG 檔案格式 |
