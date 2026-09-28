@@ -1,6 +1,6 @@
 # 跨瀏覽器核心回歸
 
-基準：main `7a47827`（PWA PR #2 合併版），Playwright 固定為 1.55.1。
+基準：main `12d3355`（跨瀏覽器 PR #3 合併版），Playwright 固定為 1.55.1。
 
 ## 範圍與命令
 
@@ -33,4 +33,6 @@ Windows 本機 WebKit 8 項通過。Firefox 在進入測試前出現 Windows 並
 
 本輪核心測試使用開發伺服器。正式產物的 7 項 Service Worker／PWA 測試仍由 Chromium 單獨執行（`pnpm build` 後 `pnpm test:pwa`），不宣稱 Firefox/WebKit 的 PWA 已驗收。
 
-Playwright WebKit 不是實際 Safari/iPad；本輪不涵蓋原生安裝、觸控筆、手勢、裝置鎖屏或硬體壓感，也未新增混合瀏覽器同房間測試。既有 30 分鐘 relay 長測不是瀏覽器渲染長測。這些仍是後續獨立驗收項目。
+PR #3 的 `4b1f644` 已通過 [Ubuntu CI](https://github.com/poychang/flowa/actions/runs/36311787104) 全部 73 項。合併版 `12d3355` 的 [CI](https://github.com/poychang/flowa/actions/runs/36322305464) 在 WebKit 繪圖尺寸檢查失敗：預期大於 200px，實得 31px。本階段將拖曳改為逐影格輸入，並在重新載入前等待最終幾何寫入 IndexedDB；保留原有匯出尺寸斷言。
+
+Playwright WebKit 不是實際 Safari/iPad；原生安裝、觸控筆、裝置鎖屏或硬體壓感仍待實機驗收。新增的混合瀏覽器同房間與觸控模擬回歸見 [跨裝置驗收](device-acceptance.md)，使用獨立的 `pnpm test:devices`。既有 30 分鐘 relay 長測不是瀏覽器渲染長測。

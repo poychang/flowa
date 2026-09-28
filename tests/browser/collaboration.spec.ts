@@ -1,13 +1,10 @@
 import { test, expect, type Page, type WebSocketRoute } from '@playwright/test';
 import { createRelay } from '../../apps/relay/server';
 import { scene, rectangle } from './fixtures';
+import { drawRectangle as draw } from './draw';
 let relay: ReturnType<typeof createRelay>;
 test.beforeEach(async () => { relay = createRelay({ origins: ['http://127.0.0.1:5180'] }); await relay.listen(3002); });
 test.afterEach(async () => { await relay.close(); });
-async function draw(page: Page, x = 650, y = 450) {
-  await page.getByTitle('長方形 — R 或 2', { exact: true }).click();
-  await page.mouse.move(x, y); await page.mouse.down(); await page.mouse.move(x + 120, y + 90, { steps: 6 }); await page.mouse.up();
-}
 async function savedElements(page: Page) {
   return page.evaluate(async () => {
     const key = `room:${new URLSearchParams(location.hash.slice(1)).get('room')}`;

@@ -1,8 +1,8 @@
 # Flowa 開發狀態
 
-更新日期：2026-09-25。PWA 與離線保護已合併，本階段補齊跨瀏覽器核心回歸測試；完整 MVP 的跨裝置驗收與雲端部署仍未完成。
+更新日期：2026-09-28。PWA、離線保護與跨瀏覽器核心回歸已合併。本階段修正房間重新載入的空綁定誤判，增加混合瀏覽器協作與平板觸控回歸；實機跨裝置驗收與雲端部署仍未完成。
 
-工作副本位於 `C:/Users/Nova/Documents/Codex/2026-09-22/flowa`，規格來源為桌面 `code/flowa` 的文件。GitHub 為 https://github.com/poychang/flowa ，多人協作（PR #1）及 PWA（PR #2）已合併至 main（7a47827）；包括字型初始化順序與 PWA 儲存測試的後續修正。
+工作副本位於 `C:/Users/Nova/Documents/Codex/2026-09-22/flowa`，規格來源為桌面 `code/flowa` 的文件。GitHub 為 https://github.com/poychang/flowa ，多人協作（PR #1）、PWA（PR #2）與跨瀏覽器回歸（PR #3）已合併至 main（12d3355）。
 
 ## 啟動與驗證
 
@@ -17,6 +17,7 @@ pnpm test:relay
 pnpm exec playwright install chromium firefox webkit
 pnpm test:e2e
 pnpm test:cross-browser
+pnpm test:devices
 pnpm build
 pnpm test:pwa
 pnpm build:relay
@@ -35,18 +36,22 @@ pnpm build:relay
 - 房間副本與單人草稿隔離；失效房間可從已有副本重開，不把載入失敗當成空白文件。
 - Manifest、靜態資源及字型離線快取；明確同意更新、更新前交易式副本、多分頁阻擋與持續保存請求。
 - Firefox／WebKit 核心回歸各 8 項（使用既有案例標籤），納入 GitHub Actions；平台結果見跨瀏覽器驗證文件。
+- Chromium／WebKit 混合房間、重新載入、離線收斂與恢復副本；觸控平板繪圖、橫直向尺寸切換與 JSON 匯出。
+- 元素空綁定 null／[] 比較相容，避免 Excalidraw 初始化誤報同版本衝突。
 - GitHub Actions 驗證工作流程；30 分鐘量測另由手動命令執行。
 
 ## 驗證結果
 
-已合併基準 `7a47827` 通過 [GitHub Actions Check](https://github.com/poychang/flowa/actions/runs/36106598633)，涵蓋以下 57 項測試與建置。跨瀏覽器擴充範圍與結果另見 [跨瀏覽器驗證](docs/testing/cross-browser.md)。
+PR #3 的 `4b1f644` 通過 [Ubuntu CI](https://github.com/poychang/flowa/actions/runs/36311787104) 全部 73 項。合併版 `12d3355` 的 WebKit 繪圖測試曾失敗，本階段修正測試輸入節奏並等待最後幾何儲存；詳見 [跨瀏覽器驗證](docs/testing/cross-browser.md)。以下為本階段本機驗證：
 
-- 13 項單元測試通過：格式、遷移、儲存競爭／重試、交易回滾、恢復資料上限與房間隔離。
+- 15 項單元測試通過：格式、遷移、儲存競爭／重試、交易回滾、恢復資料上限、房間隔離與空綁定等價比較。
 - 8 項真實 relay 測試通過：角色、錯誤憑證／來源、容量競爭、分片與物件限制、ACK 重送、來源離線、逾時與緩衝上限。
 - 29 項 Chromium 測試通過：6 項原有單人、8 項同步 PoC、15 項正式畫布搭配真實 relay，包括唯讀、斷線編輯、重連備份失敗、服務重啟、500／2,000 物件、快照交錯、節點與綁定箭頭實際拖曳、窄螢幕與失效連結保護。
+- WebKit 核心 8 項及混合瀏覽器／觸控 3 項通過。WebKit 繪圖另外連續 5 次、觸控流程連續 3 次通過。Windows Firefox 啟動受並列設定錯誤阻擋，交由 Ubuntu CI 驗證，不列為本機通過。
 - 7 項正式版 PWA 測試通過：離線重開／修改／匯出／字型、多分頁、更新備份、快取安裝失敗、重試及持續保存被拒。
 - TypeScript、前端建置與 relay 建置通過。前端仍有第三方 `use client` 與大於 500 kB chunk 的既有警告。
-- 已檢視桌面及 390px 畫面。PNG/SVG 未做逐像素比對。
+- 本機共 70 項通過；CI 另包含 Firefox 8 項，合計 78 項。各套件產物分為 `test-results/browser`、`pwa`、`devices`，避免互相清理追蹤檔。
+- 已檢視桌面、390px 與模擬平板橫直向畫面。PNG/SVG 未做逐像素比對。
 - 歷史版本的 2 人與 4 人各 30 分鐘量測（早於最新 relay 修正，非最新版長測）：結果與測試方法見 [驗證報告](docs/testing/local-collaboration.md)，原始數據見 [relay-soak.json](docs/testing/relay-soak.json)。
 
 ## 限制與下一階段
@@ -57,7 +62,7 @@ pnpm build:relay
 
 已完成 PWA 與離線字型／快取，詳見 [PWA 操作文件](docs/pwa.md)。尚未完成 Safari/iPad/觸控筆、真實鎖屏與 WAN 測試、長時間瀏覽器繪製測試、Azure F1 配額量測或雲端部署。500／2,000 物件測試驗證分片與資料完整性，不是跨裝置幀率保證；本機 soak 的 CPU/RSS 也不能當成 F1 容量結論。
 
-下一階段應進行 Safari/iPad 與跨裝置驗收，再以實際目標環境檢查 F1 配額與連線；不自動建立付費服務或擴容。
+下一階段依 [跨裝置驗收清單](docs/testing/device-acceptance.md) 準備受信任的 HTTPS／WSS 測試環境並進行 Safari/iPad 實測，再以實際目標環境檢查 F1 配額與連線；不自動建立付費服務或擴容。
 
 ## 設計紀錄
 
