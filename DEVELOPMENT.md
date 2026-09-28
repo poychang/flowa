@@ -1,8 +1,8 @@
 # Flowa 開發狀態
 
-更新日期：2026-09-28。PWA、離線保護與跨瀏覽器核心回歸已合併。本階段修正房間重新載入的空綁定誤判，增加混合瀏覽器協作與平板觸控回歸；實機跨裝置驗收與雲端部署仍未完成。
+更新日期：2026-09-28。PWA、離線保護與跨瀏覽器核心回歸已合併。房間重新載入修正與跨裝置模擬回歸已合併。本階段提供正式建置的 HTTPS／WSS 實機驗收啟動工具；實際 iPad 驗收與雲端部署仍未完成。
 
-工作副本位於 `C:/Users/Nova/Documents/Codex/2026-09-22/flowa`，規格來源為桌面 `code/flowa` 的文件。GitHub 為 https://github.com/poychang/flowa ，多人協作（PR #1）、PWA（PR #2）與跨瀏覽器回歸（PR #3）已合併至 main（12d3355）。
+工作副本位於 `C:/Users/Nova/Documents/Codex/2026-09-22/flowa`，規格來源為桌面 `code/flowa` 的文件。GitHub 為 https://github.com/poychang/flowa ，多人協作（PR #1）、PWA（PR #2）、跨瀏覽器回歸（PR #3）與房間重載／跨裝置模擬（PR #4）已合併至 main（7185e4e）。
 
 ## 啟動與驗證
 
@@ -14,6 +14,7 @@ pnpm dev:all
 pnpm typecheck
 pnpm test
 pnpm test:relay
+pnpm test:device-server
 pnpm exec playwright install chromium firefox webkit
 pnpm test:e2e
 pnpm test:cross-browser
@@ -38,11 +39,12 @@ pnpm build:relay
 - Firefox／WebKit 核心回歸各 8 項（使用既有案例標籤），納入 GitHub Actions；平台結果見跨瀏覽器驗證文件。
 - Chromium／WebKit 混合房間、重新載入、離線收斂與恢復副本；觸控平板繪圖、橫直向尺寸切換與 JSON 匯出。
 - 元素空綁定 null／[] 比較相容，避免 Excalidraw 初始化誤報同版本衝突。
+- `build:devices`／`serve:devices`：HTTPS 正式 PWA 與 WSS relay、精確 Origin、憑證／建置設定檢查、部分啟動失敗清理；預設只監聽本機。
 - GitHub Actions 驗證工作流程；30 分鐘量測另由手動命令執行。
 
 ## 驗證結果
 
-PR #3 的 `4b1f644` 通過 [Ubuntu CI](https://github.com/poychang/flowa/actions/runs/36311787104) 全部 73 項。合併版 `12d3355` 的 WebKit 繪圖測試曾失敗，本階段修正測試輸入節奏並等待最後幾何儲存；詳見 [跨瀏覽器驗證](docs/testing/cross-browser.md)。以下為本階段本機驗證：
+已合併基準 `7185e4e` 通過 [main Check](https://github.com/poychang/flowa/actions/runs/36376154145) 全部 78 項及型別／前後端建置，先前 WebKit 拖曳測試已修正。以下保留既有回歸結果；本階段另增加 4 項 HTTPS／WSS 伺服器及 3 項正式啟動測試，本機已通過，CI 合計 85 項。
 
 - 15 項單元測試通過：格式、遷移、儲存競爭／重試、交易回滾、恢復資料上限、房間隔離與空綁定等價比較。
 - 8 項真實 relay 測試通過：角色、錯誤憑證／來源、容量競爭、分片與物件限制、ACK 重送、來源離線、逾時與緩衝上限。
@@ -62,7 +64,7 @@ PR #3 的 `4b1f644` 通過 [Ubuntu CI](https://github.com/poychang/flowa/actions
 
 已完成 PWA 與離線字型／快取，詳見 [PWA 操作文件](docs/pwa.md)。尚未完成 Safari/iPad/觸控筆、真實鎖屏與 WAN 測試、長時間瀏覽器繪製測試、Azure F1 配額量測或雲端部署。500／2,000 物件測試驗證分片與資料完整性，不是跨裝置幀率保證；本機 soak 的 CPU/RSS 也不能當成 F1 容量結論。
 
-下一階段依 [跨裝置驗收清單](docs/testing/device-acceptance.md) 準備受信任的 HTTPS／WSS 測試環境並進行 Safari/iPad 實測，再以實際目標環境檢查 F1 配額與連線；不自動建立付費服務或擴容。
+下一階段依 [HTTPS／WSS 啟動文件](docs/testing/device-environment.md) 設定 LAN 位址及受信任憑證，再按 [跨裝置驗收清單](docs/testing/device-acceptance.md) 進行 Safari/iPad 實測，再以實際目標環境檢查 F1 配額與連線；不自動建立付費服務或擴容。
 
 ## 設計紀錄
 

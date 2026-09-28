@@ -25,7 +25,7 @@ Chromium 繪圖使用 CDP `Input.synthesizeScrollGesture` 的 touch 模式，在
 
 準備一台 iPad／Safari、桌面瀏覽器及可用的觸控筆。記錄 OS、瀏覽器版本與筆型號。以裝置可連線且憑證受信任的 HTTPS 前端與 WSS relay 測試；localhost 指的是各裝置本身，不能把桌面的 loopback 連結交給 iPad。relay 的 Origin allowlist 必須與前端來源一致，保持全服務最多 4 條連線。
 
-先用非敏感測試畫布，包含繁體中文、自由筆、填色圖形、綁定文字及連接箭頭。等待「已存於此裝置」，另存 JSON 作為基準；正式 PWA 另須等待「離線可用」。目前尚未部署可供實機使用的 HTTPS 環境。
+先用非敏感測試畫布，包含繁體中文、自由筆、填色圖形、綁定文字及連接箭頭。等待「已存於此裝置」，另存 JSON 作為基準；正式 PWA 另須等待「離線可用」。現可依 [HTTPS／WSS 環境文件](device-environment.md) 建置與啟動；實際 LAN 名稱、裝置信任的憑證與硬體驗收仍須在目標環境完成。
 
 ## 實機清單（均待驗證）
 
