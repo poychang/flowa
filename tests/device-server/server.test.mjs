@@ -40,6 +40,7 @@ test('HTTPS static server validates certificates and contains files within the b
   await writeFile(join(root, 'index.html'), '<h1>Flowa</h1>');
   await writeFile(join(root, 'sw.js'), '// service worker');
   await writeFile(join(root, '.device-build.json'), 'private build metadata');
+  await symlink(join(root, '.device-build.json'), join(root, 'build.json'));
   await writeFile(join(root, 'accidental-key.pem'), key);
   await writeFile(join(directory, 'secret.txt'), 'must not be served');
   await symlink(directory, join(root, 'outside'), process.platform === 'win32' ? 'junction' : 'dir');
@@ -52,7 +53,7 @@ test('HTTPS static server validates certificates and contains files within the b
     assert.equal((await get(port, '/sw.js')).headers['cache-control'], 'no-store');
     assert.equal((await get(port, '/', { method: 'HEAD' })).body, '');
     assert.equal((await get(port, '/', { method: 'POST' })).status, 405);
-    for (const path of ['/%2e%2e/secret.txt', '/..%5csecret.txt', '/outside/secret.txt', '/.device-build.json', '/accidental-key.pem', '/%E0%A4%A', '/missing.js', '/rooms', '/__test__/release'])
+    for (const path of ['/%2e%2e/secret.txt', '/..%5csecret.txt', '/outside/secret.txt', '/.device-build.json', '/build.json', '/accidental-key.pem', '/%E0%A4%A', '/missing.js', '/rooms', '/__test__/release'])
       assert.equal((await get(port, path)).status, 404, path);
     await assert.rejects(get(port, '/', { ca: undefined }), /self-signed certificate/);
     await assert.rejects(get(port, '/', { servername: 'wrong.test' }), /Hostname\/IP does not match/);

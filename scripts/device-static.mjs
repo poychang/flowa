@@ -5,6 +5,7 @@ const mime = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.
 export async function staticHandler(directory) {
   const root = await realpath(directory);
   const inside = path => { const part = relative(root, path); return part !== '' && !part.startsWith('..' + sep) && part !== '..' && !isAbsolute(part); };
+  const hidden = path => relative(root, path).split(sep).some(part => part.startsWith('.'));
   return async (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -18,7 +19,7 @@ export async function staticHandler(directory) {
       const candidate = resolve(root, '.' + (pathname === '/' ? '/index.html' : pathname));
       if (!inside(candidate)) throw new Error('invalid-path');
       const path = await realpath(candidate);
-      if (!inside(path) || !mime[extname(path)] || !(await stat(path)).isFile()) throw new Error('invalid-path');
+      if (!inside(path) || hidden(path) || !mime[extname(path)] || !(await stat(path)).isFile()) throw new Error('invalid-path');
       const body = await readFile(path);
       res.setHeader('Content-Type', mime[extname(path)] || 'application/octet-stream');
       res.setHeader('Content-Length', body.length);
