@@ -1,4 +1,5 @@
-import { createServer } from 'node:http';
+import { createServer, type RequestListener } from 'node:http';
+import { createServer as createHttpsServer, type ServerOptions } from 'node:https';
 import { createHash, randomBytes, randomUUID, timingSafeEqual } from 'node:crypto';
 import { Server, type Socket } from 'socket.io';
 import { VERSION, LIMITS, joinSchema, parseDelta, parseSnapshot, snapshotMetaSchema, presenceSchema, canonical, jsonBytes } from '../../packages/protocol/index.ts';
@@ -10,7 +11,7 @@ type Version = { version: number; nonce: number; hash: string; bytes: number };
 type Pending = { update: Update; waiting: Set<string>; bytes: number; at: number };
 type Transfer = { id: string; donor: string; target: string; base: number; at: number; seed: boolean; meta?: SnapshotMeta; parts: Buffer[]; received: number };
 type Room = { id: string; expiresAt: number; emptyAt: number; credentials: Record<Role, string>; initialized: boolean; seq: number; members: Map<string, Member>; versions: Map<string, Version>; pending: Map<number, Pending>; seen: Map<string, { hash: string; seq: number }>; transfers: Map<string, Transfer> };
-export interface RelayOptions { origins: string[]; capacity?: number; roomMs?: number; idleMs?: number; snapshotMs?: number; now?: () => number; }
+export interface RelayOptions { origins: string[]; tls?: ServerOptions; capacity?: number; roomMs?: number; idleMs?: number; snapshotMs?: number; now?: () => number; }
 
 export function createRelay(options: RelayOptions) {
   const rooms = new Map<string, Room>();
@@ -34,7 +35,7 @@ export function createRelay(options: RelayOptions) {
     if (!room || now() >= room.expiresAt) throw new Error('room-expired');
     return room;
   }
-  const http = createServer((req, res) => {
+  const handler: RequestListener = (req, res) => {
     const origin = req.headers.origin;
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -69,7 +70,8 @@ export function createRelay(options: RelayOptions) {
       const message = error instanceof Error ? error.message : 'invalid-request';
       reply(['rate-limited', 'capacity-exceeded'].includes(message) ? 429 : 400, { error: message });
     }
-  });
+  };
+  const http = options.tls ? createHttpsServer({ minVersion: 'TLSv1.2', ...options.tls }, handler) : createServer(handler);
   const io = new Server(http, { transports: ['websocket'], maxHttpBufferSize: LIMITS.packet, connectTimeout: 5000,
     allowRequest: (req, callback) => callback(null, Boolean(req.headers.origin && options.origins.includes(req.headers.origin))),
   });
@@ -225,5 +227,8 @@ export function createRelay(options: RelayOptions) {
     for (const [key, value] of rates) if (now() - value.start > 60000) rates.delete(key);
   }
   const timer = setInterval(sweep, 1000); timer.unref();
-  return { http, io, stats, sweep, listen: (port = 0, host = '127.0.0.1') => new Promise<number>(resolve => http.listen(port, host, () => resolve((http.address() as { port: number }).port))), close: () => new Promise<void>(resolve => { clearInterval(timer); io.close(() => resolve()); }) };
+  return { http, io, stats, sweep, listen: (port = 0, host = '127.0.0.1') => new Promise<number>((resolve, reject) => {
+    http.once('error', reject);
+    http.listen(port, host, () => { http.off('error', reject); resolve((http.address() as { port: number }).port); });
+  }), close: () => new Promise<void>(resolve => { clearInterval(timer); io.close(() => resolve()); }) };
 }

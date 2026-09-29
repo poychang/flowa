@@ -22,7 +22,7 @@ pnpm dev:all
 | `PORT` | `3001` | relay 監聽埠 |
 | `ALLOWED_ORIGINS` | `http://127.0.0.1:5173,http://localhost:5173` | 精確 origin 清單，以逗號分隔、不含結尾斜線 |
 
-預設只允許同一部電腦使用。若自行在受信任區域網路測試，須同時調整前端 Vite host、relay host、可到達的 `VITE_RELAY_URL`、origin 與防火牆；分享連結必須使用其他裝置可到達的前端網址。正式公開使用須配置 HTTPS/WSS，這次沒有提供公開部署設定或宣稱已完成安全稽核。
+預設只允許同一部電腦使用。跨裝置驗收改用 [HTTPS／WSS 正式建置啟動工具](testing/device-environment.md)，明確設定可到達的 origin、監聽介面、受信任憑證與防火牆。此工具供受信任 LAN 測試，尚未提供公開雲端部署或完成安全稽核。
 
 建置：
 

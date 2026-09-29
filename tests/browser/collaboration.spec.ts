@@ -7,7 +7,8 @@ test.beforeEach(async () => { relay = createRelay({ origins: ['http://127.0.0.1:
 test.afterEach(async () => { await relay.close(); });
 async function savedElements(page: Page) {
   return page.evaluate(async () => {
-    const key = `room:${new URLSearchParams(location.hash.slice(1)).get('room')}`;
+    const room = new URLSearchParams(location.hash.slice(1)).get('room');
+    const key = room ? `room:${room}` : 'draft';
     const db = await new Promise<IDBDatabase>(resolve => { const request = indexedDB.open('flowa'); request.onsuccess = () => resolve(request.result); });
     return new Promise<any[]>(resolve => { const request = db.transaction('boards').objectStore('boards').get(key); request.onsuccess = () => { db.close(); resolve(JSON.parse(request.result?.scene ?? '{"elements":[]}').elements); }; });
   });
@@ -82,6 +83,10 @@ test('a room never overwrites the unrelated single-user draft', async ({ page, b
   try {
     await guest.goto('/'); await expect(guest.getByRole('button', { name: '匯入 JSON', exact: true })).toBeEnabled();
     await guest.locator('input[type=file]').setInputFiles({ name: 'local.json', mimeType: 'application/json', buffer: Buffer.from(scene([rectangle('unrelated')])) });
+    // The previous empty draft may already say "saved" while File.text() is pending.
+    // Wait for the imported transaction and remounted editor before navigating.
+    await expect.poll(async () => (await savedElements(guest)).map(element => element.id)).toEqual(['unrelated']);
+    await expect(guest.getByRole('button', { name: '匯入 JSON', exact: true })).toBeEnabled();
     await expect(guest.getByRole('status')).toHaveText('已存於此裝置');
     await guest.goto(link); await expect(guest.getByTestId('sync-status')).toHaveText('協作同步完成');
     expect((await savedElements(guest)).some(element => element.id === 'unrelated')).toBe(false);

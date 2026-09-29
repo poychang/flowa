@@ -97,11 +97,13 @@ pnpm dev:all
 
 開啟 `http://127.0.0.1:5173`，輸入顯示名稱後建立房間，再把「編輯連結」或「唯讀連結」貼到另一個瀏覽器環境。預設只綁定本機；其他裝置無法使用此 loopback 網址。僅開發單人畫布可執行 `pnpm dev`。
 
-PWA 與 Firefox／WebKit 核心回歸已合併至 main（12d3355）。本階段補上房間重新載入相容性修正、混合瀏覽器協作與平板觸控回歸。完整命令、各版本驗證結果及限制見 [DEVELOPMENT.md](./DEVELOPMENT.md)；另見 [跨瀏覽器回歸](docs/testing/cross-browser.md)、[跨裝置驗收](docs/testing/device-acceptance.md) 及 [協作操作文件](docs/collaboration.md)。
+PWA、跨瀏覽器核心回歸、房間重新載入修正及平板觸控模擬已合併至 main（7185e4e），合併版 CI 78 項通過。完整命令、各版本驗證結果及限制見 [DEVELOPMENT.md](./DEVELOPMENT.md)；另見 [跨瀏覽器回歸](docs/testing/cross-browser.md)、[跨裝置驗收](docs/testing/device-acceptance.md) 及 [協作操作文件](docs/collaboration.md)。
 
 單人模式須能在協作後端未設定或不可用時獨立運作。正式託管使用 HTTPS／WSS，瀏覽器直接連至 F1，不依賴 Static Web Apps 的 API 代理。
 
 PWA 須使用正式建置：執行 `pnpm build`、`pnpm preview`，等待「離線可用」後即可離線重開。安裝、更新前備份與儲存限制見 [PWA 操作文件](docs/pwa.md)。
+
+實機驗收可使用 `pnpm build:devices` 與 `pnpm serve:devices` 提供 HTTPS／WSS，須先設定 LAN origin 與裝置信任的憑證；完整步驟見 [實機驗收環境](docs/testing/device-environment.md)。工具不會自動部署 Azure 或安裝 CA。
 
 ## 授權
 

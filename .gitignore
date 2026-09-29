@@ -4,6 +4,9 @@ dist/
 .env
 .env.*
 !.env.example
+!.env.device.example
+.certs/
+tests/device-server/fixtures/localhost-key.pem
 *.log
 
 test-results/

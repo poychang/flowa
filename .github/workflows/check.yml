@@ -21,6 +21,7 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm test:relay
+      - run: pnpm test:device-server
       - run: pnpm exec playwright install --with-deps chromium firefox webkit
       - run: pnpm test:e2e
       - run: pnpm test:cross-browser
@@ -28,3 +29,8 @@ jobs:
       - run: pnpm build
       - run: pnpm test:pwa
       - run: pnpm build:relay
+      - run: pnpm build:devices
+        env:
+          DEVICE_ORIGIN: https://localhost:8443
+          DEVICE_RELAY_ORIGIN: https://localhost:8444
+      - run: pnpm test:device-launcher
