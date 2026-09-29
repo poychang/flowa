@@ -31,6 +31,25 @@ test('rooms authenticate, deny viewer writes and cross-room access, and distingu
   } finally { await server.close(); }
 });
 
+test('resume check reports the live sequence without resetting donor readiness', async () => {
+  let clock = Date.now();
+  const server = createRelay({ origins: [ORIGIN], now: () => clock, roomMs: 10000 });
+  const url = `http://127.0.0.1:${await server.listen()}`;
+  try {
+    const room = await roomAt(url), owner = await connect(url, room);
+    assert.deepEqual(await rpc(owner, 'resume-check', {}), { ready: false, seq: 0 });
+    await initialize(owner, [rectangle('base')]);
+    assert.deepEqual(await rpc(owner, 'resume-check', {}), { ready: true, seq: 0 });
+    const accepted = await rpc(owner, 'elements-update', update([rectangle('base', { version: 2 })]));
+    assert.deepEqual(await rpc(owner, 'resume-check', {}), { ready: true, seq: accepted.seq });
+    const viewer = await connect(url, room, 'viewer');
+    await joinFrom(viewer, owner, [rectangle('base', { version: 2 })]);
+    assert.deepEqual(await rpc(viewer, 'resume-check', {}), { ready: true, seq: accepted.seq });
+    clock += 10001;
+    await assert.rejects(rpc(owner, 'resume-check', {}), /room-expired/);
+  } finally { await server.close(); }
+});
+
 test('sync-ready and applied ACK must follow the server-tracked contiguous sequence', async () => {
   const server = createRelay({ origins: [ORIGIN] }); const url = `http://127.0.0.1:${await server.listen()}`;
   try {

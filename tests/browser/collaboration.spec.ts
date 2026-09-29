@@ -97,6 +97,116 @@ test('a room never overwrites the unrelated single-user draft', async ({ page, b
   } finally { await context.close(); }
 });
 
+test('restored page verifies its connection and checkpoints local content', { tag: '@cross-browser' }, async ({ page, browser }) => {
+  await create(page);
+  const context = await browser.newContext(); const guest = await context.newPage();
+  try {
+    await guest.goto(await share(page, '編輯'));
+    await expect(guest.getByTestId('sync-status')).toHaveText('協作同步完成');
+    await draw(guest, 650, 500);
+    const previousIds = [...relay.io.sockets.sockets.keys()].sort();
+    let checked = 0;
+    for (const socket of relay.io.sockets.sockets.values()) socket.on('resume-check', () => { checked++; });
+    // Simulate the lifecycle notification, not actual OS suspension or BFCache admission.
+    await guest.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
+    await expect.poll(() => checked).toBe(1);
+    expect([...relay.io.sockets.sockets.keys()].sort()).toEqual(previousIds);
+    await expect(guest.getByTestId('sync-status')).toHaveText('協作同步完成');
+    await expect.poll(async () => (await savedElements(guest)).length).toBe(1);
+    await expect.poll(async () => (await savedElements(page)).map(element => element.id)).toEqual((await savedElements(guest)).map(element => element.id));
+    const downloaded = guest.waitForEvent('download'); await guest.getByRole('button', { name: '匯出恢復副本' }).click();
+    const stream = await (await downloaded).createReadStream(); const chunks = []; for await (const chunk of stream!) chunks.push(chunk);
+    expect(JSON.parse(Buffer.concat(chunks).toString()).elements[0].id).toBe((await savedElements(guest))[0].id);
+    await page.getByRole('button', { name: '關閉房間', exact: true }).click();
+    await expect(guest.getByTestId('sync-status')).toHaveText('房間失效');
+    await guest.waitForTimeout(1100); // Exercise the terminal-state guard beyond lifecycle deduplication.
+    await guest.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
+    await expect(guest.getByTestId('sync-status')).toHaveText('房間失效');
+  } finally { await context.close(); }
+});
+
+test('a sole editor stays available after foreground recovery', { tag: '@cross-browser' }, async ({ page }) => {
+  await create(page); await draw(page);
+  await expect(page.getByTestId('sync-status')).toHaveText('協作同步完成');
+  const socket = [...relay.io.sockets.sockets.values()][0];
+  let checked = false; socket.on('resume-check', () => { checked = true; });
+  await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
+  await expect.poll(() => checked).toBe(true);
+  expect([...relay.io.sockets.sockets.keys()]).toEqual([socket.id]);
+  await draw(page, 850, 600);
+  await expect(page.getByTestId('sync-status')).toHaveText('協作同步完成');
+  await expect.poll(async () => (await savedElements(page)).length).toBe(2);
+});
+
+test('foreground sequence check recovers missed updates on a connected transport', async ({ page, browser }) => {
+  await create(page);
+  const context = await browser.newContext(), guest = await context.newPage();
+  let dropUpdates = false, dropped = 0;
+  await context.routeWebSocket('**/socket.io/**', client => {
+    const server = client.connectToServer();
+    server.onMessage(message => {
+      if (dropUpdates && typeof message === 'string' && message.startsWith('42["elements-update",')) { dropped++; return; }
+      client.send(message);
+    });
+  });
+  try {
+    await guest.goto(await share(page, '編輯')); await expect(guest.getByTestId('sync-status')).toHaveText('協作同步完成');
+    dropUpdates = true;
+    await draw(page);
+    await expect.poll(() => dropped).toBeGreaterThan(0);
+    expect(await savedElements(guest)).toHaveLength(0);
+    const previousIds = [...relay.io.sockets.sockets.keys()].sort();
+    dropUpdates = false;
+    await guest.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
+    await expect.poll(() => [...relay.io.sockets.sockets.keys()].sort()).not.toEqual(previousIds);
+    await expect(guest.getByTestId('sync-status')).toHaveText('協作同步完成');
+    await expect.poll(async () => (await savedElements(guest)).map(element => element.id)).toEqual((await savedElements(page)).map(element => element.id));
+    await expect.poll(async () => (await savedElements(guest)).length).toBe(1);
+    await expect(page.getByTestId('sync-status')).toHaveText('協作同步完成');
+  } finally { await context.close(); }
+});
+
+test('restore backup failure preserves content and requires explicit retry', async ({ page, browser }) => {
+  await create(page);
+  const context = await browser.newContext(); const guest = await context.newPage();
+  try {
+    await guest.goto(await share(page, '編輯')); await expect(guest.getByTestId('sync-status')).toHaveText('協作同步完成');
+    await draw(guest, 650, 500);
+    await expect.poll(async () => (await savedElements(guest)).length).toBe(1);
+    const id = (await savedElements(guest))[0].id;
+    await guest.evaluate(() => {
+      const add = IDBObjectStore.prototype.add;
+      IDBObjectStore.prototype.add = function (...args) { if (this.name === 'recoveries') throw new DOMException('Backup quota exceeded', 'QuotaExceededError'); return add.apply(this, args); };
+      window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+    });
+    await expect(guest.getByTestId('sync-status')).toHaveText('同步失敗');
+    await guest.waitForTimeout(1100); // Do not let lifecycle deduplication mask the error-state guard.
+    await guest.evaluate(() => window.dispatchEvent(new Event('online')));
+    await expect(guest.getByTestId('sync-status')).toHaveText('同步失敗');
+    const downloaded = guest.waitForEvent('download'); await guest.getByRole('button', { name: '備份 JSON ↗' }).click();
+    const stream = await (await downloaded).createReadStream(); const chunks = []; for await (const chunk of stream!) chunks.push(chunk);
+    expect(JSON.parse(Buffer.concat(chunks).toString()).elements.map((element: any) => element.id)).toEqual([id]);
+  } finally { await context.close(); }
+});
+
+test('restore backup failure disconnects the stale collaborator before peer updates wait on it', async ({ page, browser }) => {
+  await create(page);
+  const context = await browser.newContext(); const guest = await context.newPage();
+  try {
+    await guest.goto(await share(page, '編輯')); await expect(guest.getByTestId('sync-status')).toHaveText('協作同步完成');
+    await guest.evaluate(() => {
+      const add = IDBObjectStore.prototype.add;
+      IDBObjectStore.prototype.add = function (...args) { if (this.name === 'recoveries') throw new DOMException('Backup quota exceeded', 'QuotaExceededError'); return add.apply(this, args); };
+      window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+    });
+    await expect(guest.getByTestId('sync-status')).toHaveText('同步失敗');
+    await expect.poll(() => relay.io.sockets.sockets.size).toBe(1);
+    await draw(page, 900, 600);
+    await expect(page.getByTestId('sync-status')).toHaveText('協作同步完成');
+    await expect.poll(async () => (await savedElements(page)).length).toBe(1);
+  } finally { await context.close(); }
+});
+
 test('editor and viewer links in the same tab do not retain manager controls', async ({ page, browser }) => {
   await create(page);
   const editor = await share(page, '編輯'), viewer = await share(page, '唯讀');

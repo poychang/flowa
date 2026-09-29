@@ -121,6 +121,7 @@ export function createRelay(options: RelayOptions) {
         catch (error) { stats.rejected++; if (typeof ack === 'function') ack({ ok: false, error: error instanceof Error && !('issues' in error) ? error.message : 'invalid-payload' }); }
       });
     }
+    handler('resume-check', () => ({ ready: member.ready, seq: room.seq }));
     handler('sync-start', () => {
       for (const transfer of room.transfers.values()) if (transfer.target === socket.id) room.transfers.delete(transfer.id);
       member.ready = false; members(room);
