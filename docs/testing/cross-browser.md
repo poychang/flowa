@@ -10,7 +10,7 @@ pnpm test:e2e
 pnpm test:cross-browser
 ```
 
-Linux CI 安裝瀏覽器時加上 `--with-deps`。`test:e2e` 保留 Chromium 完整 29 項；`test:cross-browser` 執行 Firefox、WebKit 各 8 項，共 16 項。也可使用 `pnpm exec playwright test --project webkit` 或 `--project firefox` 單獨驗證。
+Linux CI 安裝瀏覽器時加上 `--with-deps`。`test:e2e` 執行 Chromium 完整 33 項；`test:cross-browser` 執行 Firefox、WebKit 各 10 項，共 20 項。本階段增加 [背景返回與資料保護](foreground-recovery.md)。也可使用 `pnpm exec playwright test --project webkit` 或 `--project firefox` 單獨驗證。
 
 使用既有案例的 `@cross-browser` 標籤選取測試，避免複製另一套斷言。所有專案使用單一 worker，避免測試 relay 的固定連接埠互相干擾。
 

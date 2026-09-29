@@ -5,6 +5,7 @@ import type { OrderedExcalidrawElement } from '@excalidraw/excalidraw/element/ty
 import { VERSION, LIMITS, canonical, jsonBytes, parseDelta, parseSnapshot, snapshotMetaSchema } from '../../../../packages/protocol/index';
 import type { Delta, Update, SnapshotMeta, Reply, Role, Member } from '../../../../packages/protocol/index';
 import { mergeElements } from './merge';
+import { watchResume, type ResumeReason } from './resume';
 
 export type SyncState = 'connecting' | 'waiting' | 'syncing' | 'synced' | 'offline' | 'expired' | 'error';
 export interface RoomLink { roomId: string; token: string; }
@@ -38,8 +39,10 @@ export class CollaborationSession {
   private bootstrap = false;
   private ticking = false;
   private outgoing = false;
+  private resuming = false;
   private lastPointer = 0;
   private timer: ReturnType<typeof setInterval>;
+  private stopWatchingResume: () => void;
   constructor(private api: ExcalidrawImperativeAPI, url: string, link: RoomLink, name: string, private hooks: SessionHooks) {
     this.socket = io(url, { transports: ['websocket'], auth: { protocol: VERSION, ...link, name }, reconnection: true, reconnectionDelay: 500, reconnectionDelayMax: 5000, autoConnect: false });
     this.socket.on('joined', value => {
@@ -55,7 +58,8 @@ export class CollaborationSession {
     this.socket.on('members', hooks.members);
     this.socket.on('presence', value => hooks.presence(value.id, value));
     this.socket.on('sync-error', value => { void this.recover(value.error); });
-    this.socket.on('snapshot-request', value => { void this.provideSnapshot(value).catch(error => {
+    this.socket.on('snapshot-request', value => { const generation = this.generation; void this.provideSnapshot(value).catch(error => {
+      if (this.disposed || generation !== this.generation) return;
       // A joining guest may disappear mid-transfer; do not disable its donor.
       if (!['invalid-transfer', 'invalid-chunk', 'target-disconnected', 'snapshot-timeout'].includes(error?.message)) this.fail(error);
     }); });
@@ -63,7 +67,9 @@ export class CollaborationSession {
       try { const meta = snapshotMetaSchema.parse(value); if (meta.transferId !== this.transferId) return; this.snapshot = { meta, parts: [], bytes: 0 }; }
       catch (error) { this.fail(error); }
     });
-    this.socket.on('snapshot-chunk', value => { void this.receiveChunk(value).catch(error => this.recover(error instanceof Error ? error.message : 'invalid-snapshot')); });
+    this.socket.on('snapshot-chunk', value => { const generation = this.generation; void this.receiveChunk(value).catch(error => {
+      if (!this.disposed && generation === this.generation) return this.recover(error instanceof Error ? error.message : 'invalid-snapshot');
+    }); });
     this.socket.on('elements-update', (packet: Update) => {
       try {
         parseDelta({ protocol: packet.protocol, id: packet.id, elements: packet.elements });
@@ -81,6 +87,42 @@ export class CollaborationSession {
     });
     this.timer = setInterval(() => { void this.tick(); }, 150);
     this.socket.connect(); hooks.status('connecting');
+    this.stopWatchingResume = watchResume(reason => { void this.resume(reason); });
+  }
+  private async resume(reason: ResumeReason) {
+    if (this.disposed || this.resuming || this.state === 'expired' || this.state === 'error') return;
+    if (reason === 'online' && this.state !== 'offline') return;
+    if (!this.socket.connected) { this.socket.connect(); return; }
+    if (!this.ready) return; // An existing join already checkpoints before applying data.
+    const generation = this.generation;
+    const current = () => !this.disposed && generation === this.generation;
+    const reconnect = () => { this.socket.disconnect(); this.set('connecting'); this.socket.connect(); };
+    this.resuming = true;
+    try {
+      // Finish a running apply/gesture, then protect local data before consuming
+      // queued updates. Keep our donor available to other returning peers.
+      while (current() && (this.ticking || this.busy())) await sleep(30);
+      if (!current()) return;
+      await this.hooks.beforeSync();
+      if (!current()) return;
+      let status: { ready: boolean; seq: number };
+      try { status = await this.rpc('resume-check', {}); }
+      catch {
+        if (current()) reconnect();
+        return;
+      }
+      if (!current()) return;
+      try { await this.consume(); }
+      catch (error) {
+        if (current() && error instanceof Error && error.message === 'sequence-gap') { reconnect(); return; }
+        throw error;
+      }
+      if (!current()) return;
+      // Release acknowledgements owed by this stale connection so the donor
+      // can finish its pending send before providing our replacement snapshot.
+      if (!status.ready || this.appliedSeq < status.seq) reconnect();
+    } catch (error) { if (current()) this.fail(error); }
+    finally { this.resuming = false; }
   }
   private set(state: SyncState, error?: string) { if (this.disposed) return; this.state = state; this.hooks.editable(this.ready); this.hooks.status(state, error); }
   private rpc<T = any>(event: string, value: unknown): Promise<T> {
@@ -98,9 +140,10 @@ export class CollaborationSession {
       if (this.disposed || generation !== this.generation || !this.socket.connected) return;
       this.set('waiting');
       const result = await this.rpc('sync-start', {});
+      if (this.disposed || generation !== this.generation) return;
       this.transferId = result.transferId;
       setTimeout(() => { if (!this.disposed && generation === this.generation && !this.ready) void this.recover('snapshot-timeout'); }, LIMITS.snapshotMs + 500);
-    } catch (error) { this.fail(error); }
+    } catch (error) { if (!this.disposed && generation === this.generation) this.fail(error); }
   }
   private fail(error: unknown) {
     this.ready = false; this.generation++;
@@ -125,8 +168,12 @@ export class CollaborationSession {
     const text = JSON.stringify(this.api.getSceneElementsIncludingDeleted()); parseSnapshot(text);
     const bytes = new TextEncoder().encode(text);
     const meta: SnapshotMeta = { transferId: request.transferId, baseSeq: this.appliedSeq, bytes: bytes.length, chunks: Math.ceil(bytes.length / LIMITS.chunk), digest: await digest(bytes) };
+    if (this.disposed || generation !== this.generation) return;
     await this.rpc('snapshot-meta', meta);
-    for (let index = 0; index < meta.chunks; index++) await this.rpc('snapshot-chunk', { transferId: meta.transferId, index, data: bytes.slice(index * LIMITS.chunk, (index + 1) * LIMITS.chunk) });
+    for (let index = 0; index < meta.chunks; index++) {
+      if (this.disposed || generation !== this.generation) return;
+      await this.rpc('snapshot-chunk', { transferId: meta.transferId, index, data: bytes.slice(index * LIMITS.chunk, (index + 1) * LIMITS.chunk) });
+    }
   }
   private async receiveChunk(value: { transferId: string; index: number; data: ArrayBuffer }) {
     const snapshot = this.snapshot;
@@ -150,7 +197,9 @@ export class CollaborationSession {
     const started = Date.now();
     while (generation === this.generation && !this.disposed) {
       await this.consume();
+      if (this.disposed || generation !== this.generation) return;
       const result = await this.rpc('sync-ready', { transferId: this.transferId, seq: this.appliedSeq });
+      if (this.disposed || generation !== this.generation) return;
       if (result.ready) { this.ready = true; this.bootstrap = false; this.dirty = this.role !== 'viewer'; this.set('syncing'); return; }
       if (Date.now() - started > LIMITS.snapshotMs) throw new Error('snapshot-timeout');
       await sleep(30);
@@ -158,7 +207,8 @@ export class CollaborationSession {
   }
   private async consume() {
     if (this.busy()) return;
-    while (this.incoming.length) {
+    const generation = this.generation;
+    while (!this.disposed && generation === this.generation && this.incoming.length) {
       const packet = this.incoming[0];
       if (packet.seq > this.appliedSeq + 1) throw new Error('sequence-gap');
       if (packet.seq > this.appliedSeq) {
@@ -182,10 +232,12 @@ export class CollaborationSession {
     this.lastPointer = Date.now(); void this.rpc('presence', point).catch(() => undefined);
   }
   private async tick() {
-    if (!this.ready || this.ticking || this.disposed || !this.socket.connected) return;
+    if (!this.ready || this.ticking || this.resuming || this.disposed || !this.socket.connected) return;
     this.ticking = true;
+    const generation = this.generation;
     try {
       await this.consume();
+      if (this.disposed || generation !== this.generation) return;
       if (this.role !== 'viewer' && !this.busy()) {
         if (this.inflight && Date.now() - this.inflight.at > LIMITS.ackMs && !this.outgoing) {
           if (++this.inflight.retries > 3) throw new Error('ack-timeout');
@@ -200,10 +252,10 @@ export class CollaborationSession {
           } else { this.dirty = false; this.set('synced'); }
         }
       } else if (!this.incoming.length && !this.inflight) this.set('synced');
-    } catch (error) { await this.recover(error instanceof Error ? error.message : 'sync-failed'); }
+    } catch (error) { if (!this.disposed && generation === this.generation) await this.recover(error instanceof Error ? error.message : 'sync-failed'); }
     finally { this.ticking = false; }
   }
   private async send(packet: Delta) { this.outgoing = true; try { await this.rpc('elements-update', packet); } finally { this.outgoing = false; } }
   retry() { this.attempts = 0; if (!this.socket.connected) this.socket.connect(); else void this.begin(); }
-  close() { this.disposed = true; this.generation++; clearInterval(this.timer); this.socket.removeAllListeners(); this.socket.disconnect(); }
+  close() { this.disposed = true; this.generation++; this.stopWatchingResume(); clearInterval(this.timer); this.socket.removeAllListeners(); this.socket.disconnect(); }
 }
