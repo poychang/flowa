@@ -97,7 +97,7 @@ pnpm dev:all
 
 開啟 `http://127.0.0.1:5173`，輸入顯示名稱後建立房間，再把「編輯連結」或「唯讀連結」貼到另一個瀏覽器環境。預設只綁定本機；其他裝置無法使用此 loopback 網址。僅開發單人畫布可執行 `pnpm dev`。
 
-PWA、跨瀏覽器核心回歸、房間重新載入、平板觸控模擬及 HTTPS／WSS 實機工具已合併至 main（2295e9b），合併版 CI 85 項通過。本階段新增 [背景返回與資料保護](docs/testing/foreground-recovery.md)。完整命令、各版本驗證結果及限制見 [DEVELOPMENT.md](./DEVELOPMENT.md)；另見 [跨瀏覽器回歸](docs/testing/cross-browser.md)、[跨裝置驗收](docs/testing/device-acceptance.md) 及 [協作操作文件](docs/collaboration.md)。
+截至 2026-09-29，PWA、跨瀏覽器核心回歸、房間重新載入、平板觸控模擬、HTTPS／WSS 實機工具及 [背景返回與資料保護](docs/testing/foreground-recovery.md) 已合併至 main（adbfae4，PR #1～#6）。該版本 [CI](https://github.com/poychang/flowa/actions/runs/36509605793) 100 項測試及型別／建置皆通過；最新版本長測、瀏覽器效能、iPad 實機與雲端部署仍待完成。完整命令、測試數量及待辦順序見 [DEVELOPMENT.md](./DEVELOPMENT.md)；另見 [跨瀏覽器回歸](docs/testing/cross-browser.md)、[跨裝置驗收](docs/testing/device-acceptance.md) 及 [協作操作文件](docs/collaboration.md)。
 
 單人模式須能在協作後端未設定或不可用時獨立運作。正式託管使用 HTTPS／WSS，瀏覽器直接連至 F1，不依賴 Static Web Apps 的 API 代理。
 
