@@ -189,6 +189,24 @@ test('restore backup failure preserves content and requires explicit retry', asy
   } finally { await context.close(); }
 });
 
+test('restore backup failure disconnects the stale collaborator before peer updates wait on it', async ({ page, browser }) => {
+  await create(page);
+  const context = await browser.newContext(); const guest = await context.newPage();
+  try {
+    await guest.goto(await share(page, '編輯')); await expect(guest.getByTestId('sync-status')).toHaveText('協作同步完成');
+    await guest.evaluate(() => {
+      const add = IDBObjectStore.prototype.add;
+      IDBObjectStore.prototype.add = function (...args) { if (this.name === 'recoveries') throw new DOMException('Backup quota exceeded', 'QuotaExceededError'); return add.apply(this, args); };
+      window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+    });
+    await expect(guest.getByTestId('sync-status')).toHaveText('同步失敗');
+    await expect.poll(() => relay.io.sockets.sockets.size).toBe(1);
+    await draw(page, 900, 600);
+    await expect(page.getByTestId('sync-status')).toHaveText('協作同步完成');
+    await expect.poll(async () => (await savedElements(page)).length).toBe(1);
+  } finally { await context.close(); }
+});
+
 test('editor and viewer links in the same tab do not retain manager controls', async ({ page, browser }) => {
   await create(page);
   const editor = await share(page, '編輯'), viewer = await share(page, '唯讀');

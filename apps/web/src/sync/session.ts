@@ -121,7 +121,12 @@ export class CollaborationSession {
       // Release acknowledgements owed by this stale connection so the donor
       // can finish its pending send before providing our replacement snapshot.
       if (!status.ready || this.appliedSeq < status.seq) reconnect();
-    } catch (error) { if (current()) this.fail(error); }
+    } catch (error) {
+      if (current()) {
+        this.socket.disconnect();
+        this.fail(error);
+      }
+    }
     finally { this.resuming = false; }
   }
   private set(state: SyncState, error?: string) { if (this.disposed) return; this.state = state; this.hooks.editable(this.ready); this.hooks.status(state, error); }
