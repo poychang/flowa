@@ -18,6 +18,7 @@ const duration = seconds('SOAK_SECONDS', 1800);
 const interval = seconds('SOAK_RECONNECT_SECONDS', 300);
 const offline = seconds('SOAK_OFFLINE_SECONDS', 10);
 if (interval <= offline + 1000 || duration <= interval + offline + 1000) throw new Error('Soak must include a complete reconnect cycle and settling time');
+const expectedReconnects = Math.ceil((duration - offline - 1000) / interval) - 1;
 const output = process.env.SOAK_OUTPUT ?? 'test-results/reconnect-soak.json';
 const hash = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -149,7 +150,7 @@ async function scenario(count: number) {
       await sleep(20);
     }
     await drain();
-    if (active >= 0 || !reconnects.length) throw new Error('incomplete-reconnect');
+    if (active >= 0 || reconnects.length !== expectedReconnects) throw new Error(`incomplete-reconnect:${reconnects.length}/${expectedReconnects}`);
     if (!converged()) throw new Error('scenes-diverged');
   } catch (error) { errors.push(error instanceof Error ? error.message : String(error)); }
   finally { stopping = true; peers.forEach(peer => { peer.removeAllListeners(); peer.disconnect(); }); await relay.close(); }
