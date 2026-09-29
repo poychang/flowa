@@ -42,6 +42,7 @@ pnpm build:relay
 - `build:devices`／`serve:devices`：HTTPS 正式 PWA 與 WSS relay、精確 Origin、憑證／建置設定檢查、部分啟動失敗清理；預設只監聽本機。
 - 背景超過 30 秒返回／頁面恢復時先保存副本，再驗證房間與序號；健康的單人連線不重建，漏收更新才重連。備份失敗與失效房間不被生命週期通知自動重試，詳見 [背景返回驗證](docs/testing/foreground-recovery.md)。
 - GitHub Actions 驗證工作流程；30 分鐘量測另由手動命令執行。
+- `pnpm test:soak`：2 人／4 人各 30 分鐘、每組 5 次斷線重連與離線修改保留檢查；CI 使用 24 秒短測。
 
 ## 驗證結果
 
@@ -63,7 +64,9 @@ TypeScript、前端、relay 及 HTTPS 裝置建置均通過。前端仍有第三
 
 Windows 本機 Firefox 曾受並列設定錯誤阻擋；上述 Firefox 成功結果來自 Ubuntu CI。Playwright WebKit 與觸控模擬不代表實際 Safari／iPad／觸控筆已驗收。先前已檢視桌面、390px 與模擬平板畫面，但 PNG/SVG 未做逐像素比對。
 
-歷史版本的 2 人與 4 人各 30 分鐘量測早於最新 relay 修正，不是 `adbfae4` 的長測結果。方法與結果保留於 [驗證報告](docs/testing/local-collaboration.md) 及 [原始數據](docs/testing/relay-soak.json)，待新版重新量測。
+目前 relay 的完整 30 分鐘斷線重連量測已於 `7188a68` 通過：2 人／4 人各 5 次重連，p95 分別為 12.28／13.52 ms，資料一致且錯誤與未確認增量皆為 0。[新版報告](docs/testing/reconnect-soak.md) 記錄方法、CPU／RSS、範圍限制及 [原始數據](docs/testing/relay-reconnect-soak.json)。較早的持續連線量測保留於 [歷史報告](docs/testing/local-collaboration.md) 與 [歷史數據](docs/testing/relay-soak.json)。
+
+本分支 `1df93f5` 的 [CI](https://github.com/poychang/flowa/actions/runs/36520810962) 通過上述 100 項回歸，另通過 2 組重連短測及型別／建置。它也修正文件合併版 `5f7eef4` CI 發現的 PWA 測試競態：初次草稿尚未建立時繼續等待，保留資料數量與離線還原斷言；沒有改動產品程式或長測來源。
 
 ## 限制與下一階段
 
@@ -77,10 +80,9 @@ Windows 本機 Firefox 曾受並列設定錯誤阻擋；上述 Firefox 成功結
 
 | 順序 | 待辦 | 完成條件與前置需求 |
 | --- | --- | --- |
-| 1 | 最新版協作長測 | 2 人／4 人各 30 分鐘，加入斷線重連，記錄提交、延遲、流量、CPU、記憶體與最終資料一致性 |
-| 2 | 瀏覽器效能驗證 | 500／2,000 物件的繪圖、平移、縮放及長時間操作；將渲染表現與傳輸完整性分開報告 |
-| 3 | iPad／Safari 實機驗收 | 先準備裝置、LAN 位址與受信任憑證，再依 [環境文件](docs/testing/device-environment.md) 及 [驗收清單](docs/testing/device-acceptance.md) 記錄安裝、離線、鎖屏、鍵盤、旋轉及觸控筆結果 |
-| 4 | Beta 部署準備 | 在目標環境重新核對 Azure 免費方案、區域與配額，補部署／回滾流程、冷啟動驗證、安全檢查及第三方授權聲明 |
+| 1 | 瀏覽器效能驗證 | 500／2,000 物件的繪圖、平移、縮放及長時間操作；將渲染表現與傳輸完整性分開報告 |
+| 2 | iPad／Safari 實機驗收 | 先準備裝置、LAN 位址與受信任憑證，再依 [環境文件](docs/testing/device-environment.md) 及 [驗收清單](docs/testing/device-acceptance.md) 記錄安裝、離線、鎖屏、鍵盤、旋轉及觸控筆結果 |
+| 3 | Beta 部署準備 | 在目標環境重新核對 Azure 免費方案、區域與配額，補部署／回滾流程、冷啟動驗證、安全檢查及第三方授權聲明 |
 
 目前沒有建立雲端部署；不自動建立付費服務或擴容。完成上述驗證前，不將 MVP／Beta 標示為全面驗收完成。
 

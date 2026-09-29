@@ -1,0 +1,159 @@
+{
+  "started": "2026-09-29T04:11:59.386Z",
+  "finished": "2026-09-29T04:41:59.766Z",
+  "node": "v24.19.0",
+  "platform": "win32",
+  "sourceCommit": "7188a68b39e7d8d9f23386f7ea4257eb68e25540",
+  "dirtyPaths": "",
+  "sourceHashes": {
+    "apps/relay/server.ts": "b8dbe914ac3283a20c61cee660b56498afa31446f075c6692f446580e9247374",
+    "packages/protocol/index.ts": "503776a1f428127bd5785f05244bbfe0ddd5942d4a09d058ae50e4c73471f564",
+    "tests/relay/reconnect-soak.ts": "05ef40fdbc80bcc4b7c0e4469bc014c6eef74f59911cd13e65fcf70f3348b9d9",
+    "tests/relay/helpers.ts": "a8c5515d5bc056c9c87a0a79155a4912683c53c13978dca833436f45cb193590",
+    "tests/browser/fixtures.ts": "e276e57d1f2a16c475801c7719b20771b161fca97826f6013b73a77b20b7b74d",
+    "pnpm-lock.yaml": "6a1e591998cedb44012e1ab97a429bc7c1238a3bd4925da5f9808c7a06d1006a"
+  },
+  "configuration": {
+    "durationSeconds": 1800,
+    "reconnectIntervalSeconds": 300,
+    "offlineSeconds": 10
+  },
+  "processCpuMicroseconds": {
+    "user": 89078000,
+    "system": 39250000
+  },
+  "rssPeakBytes": 217174016,
+  "results": [
+    {
+      "participants": 2,
+      "durationSeconds": 1800.0640287,
+      "objects": 500,
+      "targetUpdateHzPerOnlinePeer": 1,
+      "targetCursorHzPerOnlinePeer": 4,
+      "acknowledgements": 3502,
+      "p95Milliseconds": 12.275699999998324,
+      "outboundPayloadBytes": 6912137,
+      "reconnects": [
+        {
+          "atSeconds": 300.0143155,
+          "offlineSeconds": 10.032493399999977,
+          "recoveryMilliseconds": 127.17239999998128,
+          "snapshotBytes": 204179,
+          "onlineUpdatesWhileOffline": 10,
+          "offlineEditRecovered": true,
+          "converged": true
+        },
+        {
+          "atSeconds": 600.0231753,
+          "offlineSeconds": 10.013407299999962,
+          "recoveryMilliseconds": 62.260099999955855,
+          "snapshotBytes": 204178,
+          "onlineUpdatesWhileOffline": 9,
+          "offlineEditRecovered": true,
+          "converged": true
+        },
+        {
+          "atSeconds": 900.0032414,
+          "offlineSeconds": 10.032588899999974,
+          "recoveryMilliseconds": 96.91450000007171,
+          "snapshotBytes": 204179,
+          "onlineUpdatesWhileOffline": 10,
+          "offlineEditRecovered": true,
+          "converged": true
+        },
+        {
+          "atSeconds": 1200.0217139000001,
+          "offlineSeconds": 10.003992399999872,
+          "recoveryMilliseconds": 87.25330000021495,
+          "snapshotBytes": 204183,
+          "onlineUpdatesWhileOffline": 10,
+          "offlineEditRecovered": true,
+          "converged": true
+        },
+        {
+          "atSeconds": 1500.0343455,
+          "offlineSeconds": 10.0225205000001,
+          "recoveryMilliseconds": 103.80319999996573,
+          "snapshotBytes": 204183,
+          "onlineUpdatesWhileOffline": 10,
+          "offlineEditRecovered": true,
+          "converged": true
+        }
+      ],
+      "errors": [],
+      "unacknowledged": 0,
+      "finalSceneHashes": [
+        "49f626615383aec4b71fc3ea6142fd89fa2dff53e4675647e3f30dab5d0c3048",
+        "49f626615383aec4b71fc3ea6142fd89fa2dff53e4675647e3f30dab5d0c3048"
+      ],
+      "converged": true
+    },
+    {
+      "participants": 4,
+      "durationSeconds": 1800.0288135,
+      "objects": 500,
+      "targetUpdateHzPerOnlinePeer": 1,
+      "targetCursorHzPerOnlinePeer": 4,
+      "acknowledgements": 7048,
+      "p95Milliseconds": 13.523399999830872,
+      "outboundPayloadBytes": 24653513,
+      "reconnects": [
+        {
+          "atSeconds": 300.026225,
+          "offlineSeconds": 10.004415399999997,
+          "recoveryMilliseconds": 106.58220000000438,
+          "snapshotBytes": 204187,
+          "onlineUpdatesWhileOffline": 30,
+          "offlineEditRecovered": true,
+          "converged": true
+        },
+        {
+          "atSeconds": 600.0266419,
+          "offlineSeconds": 10.015115300000064,
+          "recoveryMilliseconds": 84.25749999994878,
+          "snapshotBytes": 204186,
+          "onlineUpdatesWhileOffline": 27,
+          "offlineEditRecovered": true,
+          "converged": true
+        },
+        {
+          "atSeconds": 900.0195628999999,
+          "offlineSeconds": 10.033937400000054,
+          "recoveryMilliseconds": 53.76320000004489,
+          "snapshotBytes": 204187,
+          "onlineUpdatesWhileOffline": 30,
+          "offlineEditRecovered": true,
+          "converged": true
+        },
+        {
+          "atSeconds": 1200.0263309000002,
+          "offlineSeconds": 10.007376999999861,
+          "recoveryMilliseconds": 73.72090000007302,
+          "snapshotBytes": 204195,
+          "onlineUpdatesWhileOffline": 30,
+          "offlineEditRecovered": true,
+          "converged": true
+        },
+        {
+          "atSeconds": 1500.0175366,
+          "offlineSeconds": 10.063878100000089,
+          "recoveryMilliseconds": 70.36679999995977,
+          "snapshotBytes": 204195,
+          "onlineUpdatesWhileOffline": 30,
+          "offlineEditRecovered": true,
+          "converged": true
+        }
+      ],
+      "errors": [],
+      "unacknowledged": 0,
+      "finalSceneHashes": [
+        "88627626d366017c981ba414df2ea591369255a3132dfdc27f96c880af58a413",
+        "88627626d366017c981ba414df2ea591369255a3132dfdc27f96c880af58a413",
+        "88627626d366017c981ba414df2ea591369255a3132dfdc27f96c880af58a413",
+        "88627626d366017c981ba414df2ea591369255a3132dfdc27f96c880af58a413"
+      ],
+      "converged": true
+    }
+  ],
+  "note": "Concurrent loopback scenarios in one process; CPU/RSS include both relays and clients. Payload includes snapshots, ACKs and Presence, excludes transport framing/TLS. Disjoint object edits; snapshots pause workload after draining ACKs. No browser, IndexedDB, production session, WAN or Azure measurement."
+}
