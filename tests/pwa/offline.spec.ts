@@ -30,7 +30,8 @@ test.beforeEach(async ({ request }) => { await request.post('/__test__/release')
 
 test('production app restarts offline, saves edits and exports with local fonts', async ({ page, context }, info) => {
   await ready(page); await draw(page);
-  await expect.poll(async () => JSON.parse((await draft(page)).scene).elements.length).toBe(1);
+  // The first autosave may not have created the record on the initial poll.
+  await expect.poll(async () => JSON.parse((await draft(page))?.scene ?? '{"elements":[]}').elements.length).toBe(1);
   const id = JSON.parse((await draft(page)).scene).elements[0].id;
   const manifest = await (await page.request.get('/manifest.webmanifest')).json();
   expect(manifest.display).toBe('standalone'); expect(manifest.start_url).toBe('/');
