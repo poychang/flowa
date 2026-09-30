@@ -42,13 +42,13 @@ async function pan(page: Page, direction: number) {
   await page.mouse.up(); await page.keyboard.up('Space'); await frames(page);
 }
 declare global {
-  interface Window { flowaMeasurement?: { stop: () => { intervals: number[]; longTasks: number[]; longTasksSupported: boolean } }; }
+  interface Window { flowaMeasurement?: { canvasCreations: () => number; stop: () => { intervals: number[]; longTasks: number[]; longTasksSupported: boolean; canvasCreations: number } }; }
 }
 
 for (const count of [500, 2000]) test(`${count} objects preserve data during sustained canvas interaction`, async ({ page, context, browser }, info) => {
   const started = new Date().toISOString();
   const sourceCommit = git('rev-parse', 'HEAD');
-  const dirtyPaths = git('status', '--porcelain', '--', 'apps', 'packages', 'tests/performance', 'tests/browser/draw.ts', 'tests/browser/fixtures.ts', 'package.json', 'pnpm-lock.yaml', 'vite.config.ts', 'playwright.performance.config.ts');
+  const dirtyPaths = git('status', '--porcelain', '--', 'apps', 'packages', 'patches', 'tests/performance', 'tests/browser/draw.ts', 'tests/browser/fixtures.ts', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml', 'vite.config.ts', 'playwright.performance.config.ts');
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message)); page.on('crash', () => errors.push('page-crashed'));
   const artifactHash = await buildHash();
   await page.goto('/'); await expect(page.getByRole('button', { name: '匯入 JSON', exact: true })).toBeEnabled();
@@ -92,12 +92,18 @@ for (const count of [500, 2000]) test(`${count} objects preserve data during sus
   async function heap() { const value = await cdp.send('Performance.getMetrics'); return value.metrics.find(metric => metric.name === 'JSHeapUsedSize')?.value ?? null; }
   const memory: { seconds: number; usedJSHeapBytes: number | null }[] = [{ seconds: 0, usedJSHeapBytes: await heap() }];
   await page.evaluate(() => {
+    let canvasCreations = 0;
+    const createElement = document.createElement;
+    document.createElement = ((name: string, options?: ElementCreationOptions) => {
+      if (name.toLowerCase() === 'canvas') canvasCreations++;
+      return createElement.call(document, name, options);
+    }) as typeof document.createElement;
     const intervals: number[] = [], longTasks: number[] = []; let last = performance.now(), id = 0;
     const tick = (now: number) => { intervals.push(now - last); last = now; id = requestAnimationFrame(tick); }; id = requestAnimationFrame(tick);
     const supported = PerformanceObserver.supportedEntryTypes.includes('longtask');
     const observer = supported ? new PerformanceObserver(list => { longTasks.push(...list.getEntries().map(entry => entry.duration)); }) : undefined;
     observer?.observe({ type: 'longtask' });
-    window.flowaMeasurement = { stop: () => { cancelAnimationFrame(id); if (observer) { longTasks.push(...observer.takeRecords().map(entry => entry.duration)); observer.disconnect(); } return { intervals, longTasks, longTasksSupported: supported }; } };
+    window.flowaMeasurement = { canvasCreations: () => canvasCreations, stop: () => { document.createElement = createElement; cancelAnimationFrame(id); if (observer) { longTasks.push(...observer.takeRecords().map(entry => entry.duration)); observer.disconnect(); } return { intervals, longTasks, longTasksSupported: supported, canvasCreations }; } };
   });
   const panTimes: number[] = [], zoomTimes: number[] = []; let cycles = 0, sampleAt = 30, progressAt = 60;
   const workloadAt = performance.now();
@@ -109,6 +115,18 @@ for (const count of [500, 2000]) test(`${count} objects preserve data during sus
     if (elapsed >= sampleAt) { memory.push({ seconds: elapsed, usedJSHeapBytes: await heap() }); sampleAt += 30; }
     if (elapsed >= progressAt) { console.log(JSON.stringify({ objects: count, elapsedSeconds: Math.floor(elapsed), cycles, errors: errors.length })); progressAt += 60; }
   }
+  const interactionSeconds = (performance.now() - workloadAt) / 1000;
+  const interactionCanvasCreations = await page.evaluate(() => window.flowaMeasurement!.canvasCreations());
+  // Also stop at a new zoom level. Include deferred sharp-cache rebuilds in the sample,
+  // rather than measuring only fast out-and-back zoom bursts that reuse the old raster.
+  const settledAt = performance.now();
+  await page.keyboard.press('Control+='); await frames(page);
+  const zoomInCommandMilliseconds = performance.now() - settledAt;
+  await page.waitForTimeout(400); await frames(page);
+  const zoomInAndSettleMilliseconds = performance.now() - settledAt;
+  await page.keyboard.press('Control+-'); await page.waitForTimeout(400); await frames(page);
+  const settledZoomProbe = { zoomInCommandMilliseconds, zoomInAndSettleMilliseconds,
+    roundTripMilliseconds: performance.now() - settledAt, idleWaitPerStepMilliseconds: 400 };
   const measuredSeconds = (performance.now() - workloadAt) / 1000;
   const measured = await page.evaluate(() => window.flowaMeasurement!.stop());
   memory.push({ seconds: measuredSeconds, usedJSHeapBytes: await heap() });
@@ -139,12 +157,13 @@ for (const count of [500, 2000]) test(`${count} objects preserve data during sus
   expect(errors).toEqual([]);
   const report = { started, finished: new Date().toISOString(), sourceCommit, dirtyPaths, artifactHash, artifactDirectory, profiling,
     browser: browser.version(), node: process.version, platform: platform(), osRelease: release(), cpu: cpus()[0]?.model, totalMemoryBytes: totalmem(),
-    viewport: page.viewportSize(), devicePixelRatio: await page.evaluate(() => devicePixelRatio), objects: count, requestedSeconds: seconds, measuredSeconds, cycles,
+    viewport: page.viewportSize(), devicePixelRatio: await page.evaluate(() => devicePixelRatio), objects: count, requestedSeconds: seconds, interactionSeconds, measuredSeconds, cycles, settledZoomProbe,
+    canvasCreations: { interaction: interactionCanvasCreations, includingSettledProbe: measured.canvasCreations },
     importAndSaveMilliseconds, drawingCommandMilliseconds, drawingSaveMilliseconds,
     panPairCommandMilliseconds: summarize(panTimes), zoomPairCommandMilliseconds: summarize(zoomTimes),
     animationFrameIntervalMilliseconds: summarize(measured.intervals), intervalsOver50ms: measured.intervals.filter(value => value > 50).length,
     longTaskMilliseconds: summarize(measured.longTasks), longTasksSupported: measured.longTasksSupported, memory, errors, finalSceneHash: finalHash,
-    note: 'Headless Chromium production preview; SW blocked, no relay. Dense rectangles. RAF intervals are callback scheduling, not GPU frame rate. Commands include Playwright transport and deliberate frame pacing. Heap samples do not prove a leak; no forced GC. Drawing is measured once; sustained workload pans, zooms and nudges the selected object.' };
+    note: 'Headless Chromium production preview; SW blocked, no relay. Dense rectangles. RAF intervals are callback scheduling, not GPU frame rate. Commands include Playwright transport and deliberate frame pacing. Heap samples do not prove a leak; no forced GC. Drawing is measured once; sustained workload pans, zooms and nudges the selected object. Sample includes a final stopped-zoom probe with 400 ms explicit idle per step; interactionSeconds separates cycling. canvasCreations counts document.createElement(canvas), not total live canvases or memory.' };
   const path = info.outputPath(`metrics-${count}.json`); await writeFile(path, JSON.stringify(report, null, 2) + '\n');
   await info.attach('performance-metrics', { path, contentType: 'application/json' });
 });

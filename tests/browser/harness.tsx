@@ -12,6 +12,7 @@ function ready(api: ExcalidrawImperativeAPI) {
   const sync = new ElementSyncAdapter(api, 'poc-session', peer);
   Object.assign(window, { harness: {
     scene: () => structuredClone(api.getSceneElementsIncludingDeleted()),
+    zoomState: () => ({ zoom: api.getAppState().zoom.value, cached: api.getAppState().shouldCacheIgnoreZoom }),
     replace: (elements: OrderedExcalidrawElement[]) => api.updateScene({ elements, captureUpdate: CaptureUpdateAction.IMMEDIATELY }),
     receive: (packet: unknown) => sync.receive(packet),
     delta: () => sync.createDelta(),

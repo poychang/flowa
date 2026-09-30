@@ -25,6 +25,8 @@ pnpm test:performance --output test-results/performance-full
 
 報告與最後畫面放在每個案例的輸出目錄；測試失敗保留 screenshot。每次量測前必須重新建置，避免使用舊的 `dist`。JSON 記錄來源提交、相關來源是否未提交、正式產物目錄的內容雜湊、瀏覽器／Node／OS／CPU、記憶體容量、viewport 與 devicePixelRatio。
 
+2026-10-01 起工具另計數互動期間的 canvas 建立呼叫，並在持續操作後追加「放大、停止、縮回、停止」probe。每個停止階段明確等待 400 ms 與兩次 RAF，RAF／long task 採樣涵蓋此階段；`interactionSeconds` 則只記錄持續操作迴圈。新版與以下歷史五分鐘基準的方法有差異，不能直接以總時間或分位數比較；詳見 [縮放快取報告](canvas-render-performance.md)。
+
 ## 場景與操作
 
 1. 匯入 499／1,999 個密集排列的填色長方形，等待 IndexedDB 寫入與編輯器準備完成。

@@ -1,0 +1,655 @@
+{
+  "date": "2026-10-01",
+  "timezone": "Asia/Taipei",
+  "buildSources": {
+    "before": "1ebf11356e7f18872d74af85d54bd3a774e6364a",
+    "after": "6844ba0857ce586a7dfca20563880deab6c31bc8"
+  },
+  "artifactHashes": {
+    "before": "5cf0590e40d5d9784e417305e834314a0f784249a443d13703a5fe146db3f1f8",
+    "after": "9746e61ffbc15af3b085a682ae63ab635213679b584438b842161e7dc63deec0"
+  },
+  "note": "Fixed production builds, ABBA order, two object counts per run. sourceCommit refers to test checkout, buildSources identifies product sources. RAF is callback scheduling, not GPU FPS. Sample includes final stopped-zoom probe with 400 ms explicit idle per step. Canvas creation counts are not live canvas or memory counts.",
+  "runs": [
+    {
+      "order": 1,
+      "variant": "before",
+      "metrics": [
+        {
+          "started": "2026-09-30T22:35:03.907Z",
+          "finished": "2026-09-30T22:35:37.599Z",
+          "sourceCommit": "6844ba0857ce586a7dfca20563880deab6c31bc8",
+          "dirtyPaths": "",
+          "artifactHash": "5cf0590e40d5d9784e417305e834314a0f784249a443d13703a5fe146db3f1f8",
+          "artifactDirectory": "test-results/performance-before",
+          "profiling": false,
+          "browser": "140.0.7339.186",
+          "node": "v24.19.0",
+          "platform": "win32",
+          "osRelease": "10.0.26300",
+          "cpu": "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz",
+          "totalMemoryBytes": 17092825088,
+          "viewport": {
+            "width": 1440,
+            "height": 1000
+          },
+          "devicePixelRatio": 1,
+          "objects": 2000,
+          "requestedSeconds": 20,
+          "interactionSeconds": 20.150688899999995,
+          "measuredSeconds": 21.9038635,
+          "cycles": 9,
+          "settledZoomProbe": {
+            "zoomInCommandMilliseconds": 444.9830000000002,
+            "zoomInAndSettleMilliseconds": 882.9987000000037,
+            "roundTripMilliseconds": 1749.7966000000015,
+            "idleWaitPerStepMilliseconds": 400
+          },
+          "canvasCreations": {
+            "interaction": 72000,
+            "includingSettledProbe": 80000
+          },
+          "importAndSaveMilliseconds": 1238.2873000000036,
+          "drawingCommandMilliseconds": 550.6007000000027,
+          "drawingSaveMilliseconds": 1032.4092000000019,
+          "panPairCommandMilliseconds": {
+            "samples": 9,
+            "p50": 1334.0973000000013,
+            "p95": 1419.2338999999993,
+            "max": 1419.2338999999993
+          },
+          "zoomPairCommandMilliseconds": {
+            "samples": 9,
+            "p50": 856.2593999999954,
+            "p95": 892.8197,
+            "max": 892.8197
+          },
+          "animationFrameIntervalMilliseconds": {
+            "samples": 889,
+            "p50": 16.69999999999891,
+            "p95": 16.80000000000291,
+            "max": 366.7000000000007
+          },
+          "intervalsOver50ms": 20,
+          "longTaskMilliseconds": {
+            "samples": 20,
+            "p50": 346,
+            "p95": 361,
+            "max": 361
+          },
+          "longTasksSupported": true,
+          "memory": [
+            {
+              "seconds": 0,
+              "usedJSHeapBytes": 38805708
+            },
+            {
+              "seconds": 21.9038635,
+              "usedJSHeapBytes": 16779856
+            }
+          ],
+          "errors": [],
+          "finalSceneHash": "352c3e73408d8fbd6fd686c8ee3acedd49609ee42ea4013de4b642fbd77b65eb",
+          "note": "Headless Chromium production preview; SW blocked, no relay. Dense rectangles. RAF intervals are callback scheduling, not GPU frame rate. Commands include Playwright transport and deliberate frame pacing. Heap samples do not prove a leak; no forced GC. Drawing is measured once; sustained workload pans, zooms and nudges the selected object. Sample includes a final stopped-zoom probe with 400 ms explicit idle per step; interactionSeconds separates cycling. canvasCreations counts document.createElement(canvas), not total live canvases or memory."
+        },
+        {
+          "started": "2026-09-30T22:34:33.956Z",
+          "finished": "2026-09-30T22:35:03.622Z",
+          "sourceCommit": "6844ba0857ce586a7dfca20563880deab6c31bc8",
+          "dirtyPaths": "",
+          "artifactHash": "5cf0590e40d5d9784e417305e834314a0f784249a443d13703a5fe146db3f1f8",
+          "artifactDirectory": "test-results/performance-before",
+          "profiling": false,
+          "browser": "140.0.7339.186",
+          "node": "v24.19.0",
+          "platform": "win32",
+          "osRelease": "10.0.26300",
+          "cpu": "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz",
+          "totalMemoryBytes": 17092825088,
+          "viewport": {
+            "width": 1440,
+            "height": 1000
+          },
+          "devicePixelRatio": 1,
+          "objects": 500,
+          "requestedSeconds": 20,
+          "interactionSeconds": 20.995134899999996,
+          "measuredSeconds": 22.132085099999998,
+          "cycles": 15,
+          "settledZoomProbe": {
+            "zoomInCommandMilliseconds": 131.71210000000065,
+            "zoomInAndSettleMilliseconds": 564.8490999999995,
+            "roundTripMilliseconds": 1133.447400000001,
+            "idleWaitPerStepMilliseconds": 400
+          },
+          "canvasCreations": {
+            "interaction": 30000,
+            "includingSettledProbe": 32000
+          },
+          "importAndSaveMilliseconds": 407.99490000000014,
+          "drawingCommandMilliseconds": 519.5047000000004,
+          "drawingSaveMilliseconds": 436.8033999999998,
+          "panPairCommandMilliseconds": {
+            "samples": 15,
+            "p50": 1104.8122000000003,
+            "p95": 1185.3639999999978,
+            "max": 1185.3639999999978
+          },
+          "zoomPairCommandMilliseconds": {
+            "samples": 15,
+            "p50": 270.97420000000056,
+            "p95": 305.2458000000006,
+            "max": 305.2458000000006
+          },
+          "animationFrameIntervalMilliseconds": {
+            "samples": 1202,
+            "p50": 16.69999999999891,
+            "p95": 16.799999999999272,
+            "max": 100.10000000000036
+          },
+          "intervalsOver50ms": 32,
+          "longTaskMilliseconds": {
+            "samples": 32,
+            "p50": 90,
+            "p95": 108,
+            "max": 115
+          },
+          "longTasksSupported": true,
+          "memory": [
+            {
+              "seconds": 0,
+              "usedJSHeapBytes": 13214204
+            },
+            {
+              "seconds": 22.132085099999998,
+              "usedJSHeapBytes": 9776064
+            }
+          ],
+          "errors": [],
+          "finalSceneHash": "a67b7c4d906859f71ad5156c5f92fe126887e09a706d852e306aae9208734787",
+          "note": "Headless Chromium production preview; SW blocked, no relay. Dense rectangles. RAF intervals are callback scheduling, not GPU frame rate. Commands include Playwright transport and deliberate frame pacing. Heap samples do not prove a leak; no forced GC. Drawing is measured once; sustained workload pans, zooms and nudges the selected object. Sample includes a final stopped-zoom probe with 400 ms explicit idle per step; interactionSeconds separates cycling. canvasCreations counts document.createElement(canvas), not total live canvases or memory."
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "variant": "after",
+      "metrics": [
+        {
+          "started": "2026-09-30T22:36:13.147Z",
+          "finished": "2026-09-30T22:36:45.883Z",
+          "sourceCommit": "6844ba0857ce586a7dfca20563880deab6c31bc8",
+          "dirtyPaths": "",
+          "artifactHash": "9746e61ffbc15af3b085a682ae63ab635213679b584438b842161e7dc63deec0",
+          "artifactDirectory": "test-results/performance-after",
+          "profiling": false,
+          "browser": "140.0.7339.186",
+          "node": "v24.19.0",
+          "platform": "win32",
+          "osRelease": "10.0.26300",
+          "cpu": "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz",
+          "totalMemoryBytes": 17092825088,
+          "viewport": {
+            "width": 1440,
+            "height": 1000
+          },
+          "devicePixelRatio": 1,
+          "objects": 2000,
+          "requestedSeconds": 20,
+          "interactionSeconds": 20.626774700000002,
+          "measuredSeconds": 22.0687771,
+          "cycles": 13,
+          "settledZoomProbe": {
+            "zoomInCommandMilliseconds": 118.28559999999561,
+            "zoomInAndSettleMilliseconds": 715.8426999999938,
+            "roundTripMilliseconds": 1439.008299999994,
+            "idleWaitPerStepMilliseconds": 400
+          },
+          "canvasCreations": {
+            "interaction": 0,
+            "includingSettledProbe": 8000
+          },
+          "importAndSaveMilliseconds": 1138.5383999999976,
+          "drawingCommandMilliseconds": 548.6097999999984,
+          "drawingSaveMilliseconds": 1008.6253999999972,
+          "panPairCommandMilliseconds": {
+            "samples": 13,
+            "p50": 1346.1906999999992,
+            "p95": 1402.019100000005,
+            "max": 1402.019100000005
+          },
+          "zoomPairCommandMilliseconds": {
+            "samples": 13,
+            "p50": 200.50879999999597,
+            "p95": 232.67350000000442,
+            "max": 232.67350000000442
+          },
+          "animationFrameIntervalMilliseconds": {
+            "samples": 1231,
+            "p50": 16.69999999999891,
+            "p95": 16.799999999999272,
+            "max": 350.1000000000022
+          },
+          "intervalsOver50ms": 6,
+          "longTaskMilliseconds": {
+            "samples": 2,
+            "p50": 369,
+            "p95": 369,
+            "max": 369
+          },
+          "longTasksSupported": true,
+          "memory": [
+            {
+              "seconds": 0,
+              "usedJSHeapBytes": 44885096
+            },
+            {
+              "seconds": 22.0687771,
+              "usedJSHeapBytes": 16828000
+            }
+          ],
+          "errors": [],
+          "finalSceneHash": "89b3436d4dc0396929ac3d724263bd8835c1a71f06ccb0f68f2c1040f7835084",
+          "note": "Headless Chromium production preview; SW blocked, no relay. Dense rectangles. RAF intervals are callback scheduling, not GPU frame rate. Commands include Playwright transport and deliberate frame pacing. Heap samples do not prove a leak; no forced GC. Drawing is measured once; sustained workload pans, zooms and nudges the selected object. Sample includes a final stopped-zoom probe with 400 ms explicit idle per step; interactionSeconds separates cycling. canvasCreations counts document.createElement(canvas), not total live canvases or memory."
+        },
+        {
+          "started": "2026-09-30T22:35:43.846Z",
+          "finished": "2026-09-30T22:36:12.892Z",
+          "sourceCommit": "6844ba0857ce586a7dfca20563880deab6c31bc8",
+          "dirtyPaths": "",
+          "artifactHash": "9746e61ffbc15af3b085a682ae63ab635213679b584438b842161e7dc63deec0",
+          "artifactDirectory": "test-results/performance-after",
+          "profiling": false,
+          "browser": "140.0.7339.186",
+          "node": "v24.19.0",
+          "platform": "win32",
+          "osRelease": "10.0.26300",
+          "cpu": "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz",
+          "totalMemoryBytes": 17092825088,
+          "viewport": {
+            "width": 1440,
+            "height": 1000
+          },
+          "devicePixelRatio": 1,
+          "objects": 500,
+          "requestedSeconds": 20,
+          "interactionSeconds": 21.0683844,
+          "measuredSeconds": 22.0830853,
+          "cycles": 17,
+          "settledZoomProbe": {
+            "zoomInCommandMilliseconds": 75.90279999999984,
+            "zoomInAndSettleMilliseconds": 529.9441999999981,
+            "roundTripMilliseconds": 1008.7046000000009,
+            "idleWaitPerStepMilliseconds": 400
+          },
+          "canvasCreations": {
+            "interaction": 0,
+            "includingSettledProbe": 2000
+          },
+          "importAndSaveMilliseconds": 400.0344,
+          "drawingCommandMilliseconds": 474.06659999999965,
+          "drawingSaveMilliseconds": 426.53629999999976,
+          "panPairCommandMilliseconds": {
+            "samples": 17,
+            "p50": 1122.1319000000003,
+            "p95": 1188.8714,
+            "max": 1188.8714
+          },
+          "zoomPairCommandMilliseconds": {
+            "samples": 17,
+            "p50": 131.27480000000105,
+            "p95": 148.8866999999991,
+            "max": 148.8866999999991
+          },
+          "animationFrameIntervalMilliseconds": {
+            "samples": 1311,
+            "p50": 16.69999999999891,
+            "p95": 16.700000000000728,
+            "max": 116.70000000000073
+          },
+          "intervalsOver50ms": 2,
+          "longTaskMilliseconds": {
+            "samples": 2,
+            "p50": 127,
+            "p95": 127,
+            "max": 127
+          },
+          "longTasksSupported": true,
+          "memory": [
+            {
+              "seconds": 0,
+              "usedJSHeapBytes": 12030824
+            },
+            {
+              "seconds": 22.0830853,
+              "usedJSHeapBytes": 12806620
+            }
+          ],
+          "errors": [],
+          "finalSceneHash": "bc100dd87a2beb9c814f86ee0c2b50cd7685816e55a35ed1b14f488eaf44d3d1",
+          "note": "Headless Chromium production preview; SW blocked, no relay. Dense rectangles. RAF intervals are callback scheduling, not GPU frame rate. Commands include Playwright transport and deliberate frame pacing. Heap samples do not prove a leak; no forced GC. Drawing is measured once; sustained workload pans, zooms and nudges the selected object. Sample includes a final stopped-zoom probe with 400 ms explicit idle per step; interactionSeconds separates cycling. canvasCreations counts document.createElement(canvas), not total live canvases or memory."
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "variant": "after",
+      "metrics": [
+        {
+          "started": "2026-09-30T22:37:21.574Z",
+          "finished": "2026-09-30T22:37:54.971Z",
+          "sourceCommit": "6844ba0857ce586a7dfca20563880deab6c31bc8",
+          "dirtyPaths": "",
+          "artifactHash": "9746e61ffbc15af3b085a682ae63ab635213679b584438b842161e7dc63deec0",
+          "artifactDirectory": "test-results/performance-after",
+          "profiling": false,
+          "browser": "140.0.7339.186",
+          "node": "v24.19.0",
+          "platform": "win32",
+          "osRelease": "10.0.26300",
+          "cpu": "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz",
+          "totalMemoryBytes": 17092825088,
+          "viewport": {
+            "width": 1440,
+            "height": 1000
+          },
+          "devicePixelRatio": 1,
+          "objects": 2000,
+          "requestedSeconds": 20,
+          "interactionSeconds": 20.451426599999998,
+          "measuredSeconds": 21.960193699999998,
+          "cycles": 13,
+          "settledZoomProbe": {
+            "zoomInCommandMilliseconds": 111.38500000000204,
+            "zoomInAndSettleMilliseconds": 731.7044000000024,
+            "roundTripMilliseconds": 1505.8569999999963,
+            "idleWaitPerStepMilliseconds": 400
+          },
+          "canvasCreations": {
+            "interaction": 0,
+            "includingSettledProbe": 8000
+          },
+          "importAndSaveMilliseconds": 1122.7467000000033,
+          "drawingCommandMilliseconds": 550.5469000000012,
+          "drawingSaveMilliseconds": 1102.1217000000033,
+          "panPairCommandMilliseconds": {
+            "samples": 13,
+            "p50": 1328.4808000000048,
+            "p95": 1384.1971000000049,
+            "max": 1384.1971000000049
+          },
+          "zoomPairCommandMilliseconds": {
+            "samples": 13,
+            "p50": 201.8501000000033,
+            "p95": 233.74240000000282,
+            "max": 233.74240000000282
+          },
+          "animationFrameIntervalMilliseconds": {
+            "samples": 1223,
+            "p50": 16.69999999999891,
+            "p95": 16.799999999999272,
+            "max": 383.40000000000146
+          },
+          "intervalsOver50ms": 9,
+          "longTaskMilliseconds": {
+            "samples": 3,
+            "p50": 365,
+            "p95": 385,
+            "max": 385
+          },
+          "longTasksSupported": true,
+          "memory": [
+            {
+              "seconds": 0,
+              "usedJSHeapBytes": 44807616
+            },
+            {
+              "seconds": 21.960193699999998,
+              "usedJSHeapBytes": 16826112
+            }
+          ],
+          "errors": [],
+          "finalSceneHash": "2fe4902fffc3c2887753d770c210835cfdea10a19c0108db6f566fa48f717cfe",
+          "note": "Headless Chromium production preview; SW blocked, no relay. Dense rectangles. RAF intervals are callback scheduling, not GPU frame rate. Commands include Playwright transport and deliberate frame pacing. Heap samples do not prove a leak; no forced GC. Drawing is measured once; sustained workload pans, zooms and nudges the selected object. Sample includes a final stopped-zoom probe with 400 ms explicit idle per step; interactionSeconds separates cycling. canvasCreations counts document.createElement(canvas), not total live canvases or memory."
+        },
+        {
+          "started": "2026-09-30T22:36:52.322Z",
+          "finished": "2026-09-30T22:37:21.343Z",
+          "sourceCommit": "6844ba0857ce586a7dfca20563880deab6c31bc8",
+          "dirtyPaths": "",
+          "artifactHash": "9746e61ffbc15af3b085a682ae63ab635213679b584438b842161e7dc63deec0",
+          "artifactDirectory": "test-results/performance-after",
+          "profiling": false,
+          "browser": "140.0.7339.186",
+          "node": "v24.19.0",
+          "platform": "win32",
+          "osRelease": "10.0.26300",
+          "cpu": "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz",
+          "totalMemoryBytes": 17092825088,
+          "viewport": {
+            "width": 1440,
+            "height": 1000
+          },
+          "devicePixelRatio": 1,
+          "objects": 500,
+          "requestedSeconds": 20,
+          "interactionSeconds": 21.0757837,
+          "measuredSeconds": 22.079327000000003,
+          "cycles": 18,
+          "settledZoomProbe": {
+            "zoomInCommandMilliseconds": 68.20860000000175,
+            "zoomInAndSettleMilliseconds": 521.0260999999991,
+            "roundTripMilliseconds": 1000.8463000000011,
+            "idleWaitPerStepMilliseconds": 400
+          },
+          "canvasCreations": {
+            "interaction": 0,
+            "includingSettledProbe": 2000
+          },
+          "importAndSaveMilliseconds": 431.73199999999997,
+          "drawingCommandMilliseconds": 517.7801999999997,
+          "drawingSaveMilliseconds": 459.16449999999986,
+          "panPairCommandMilliseconds": {
+            "samples": 18,
+            "p50": 1069.6935999999987,
+            "p95": 1136.9889000000003,
+            "max": 1136.9889000000003
+          },
+          "zoomPairCommandMilliseconds": {
+            "samples": 18,
+            "p50": 116.5012999999999,
+            "p95": 149.80449999999928,
+            "max": 149.80449999999928
+          },
+          "animationFrameIntervalMilliseconds": {
+            "samples": 1310,
+            "p50": 16.69999999999891,
+            "p95": 16.799999999999272,
+            "max": 116.70000000000073
+          },
+          "intervalsOver50ms": 2,
+          "longTaskMilliseconds": {
+            "samples": 2,
+            "p50": 127,
+            "p95": 127,
+            "max": 127
+          },
+          "longTasksSupported": true,
+          "memory": [
+            {
+              "seconds": 0,
+              "usedJSHeapBytes": 11975580
+            },
+            {
+              "seconds": 22.079327000000003,
+              "usedJSHeapBytes": 9915472
+            }
+          ],
+          "errors": [],
+          "finalSceneHash": "6a59292fdd1e2eb462548b1102d31877deb3ceffda398f5ce10fca83dc9080c0",
+          "note": "Headless Chromium production preview; SW blocked, no relay. Dense rectangles. RAF intervals are callback scheduling, not GPU frame rate. Commands include Playwright transport and deliberate frame pacing. Heap samples do not prove a leak; no forced GC. Drawing is measured once; sustained workload pans, zooms and nudges the selected object. Sample includes a final stopped-zoom probe with 400 ms explicit idle per step; interactionSeconds separates cycling. canvasCreations counts document.createElement(canvas), not total live canvases or memory."
+        }
+      ]
+    },
+    {
+      "order": 4,
+      "variant": "before",
+      "metrics": [
+        {
+          "started": "2026-09-30T22:38:30.102Z",
+          "finished": "2026-09-30T22:39:05.789Z",
+          "sourceCommit": "6844ba0857ce586a7dfca20563880deab6c31bc8",
+          "dirtyPaths": "",
+          "artifactHash": "5cf0590e40d5d9784e417305e834314a0f784249a443d13703a5fe146db3f1f8",
+          "artifactDirectory": "test-results/performance-before",
+          "profiling": false,
+          "browser": "140.0.7339.186",
+          "node": "v24.19.0",
+          "platform": "win32",
+          "osRelease": "10.0.26300",
+          "cpu": "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz",
+          "totalMemoryBytes": 17092825088,
+          "viewport": {
+            "width": 1440,
+            "height": 1000
+          },
+          "devicePixelRatio": 1,
+          "objects": 2000,
+          "requestedSeconds": 20,
+          "interactionSeconds": 22.379392399999997,
+          "measuredSeconds": 24.151664299999997,
+          "cycles": 10,
+          "settledZoomProbe": {
+            "zoomInCommandMilliseconds": 479.9204000000027,
+            "zoomInAndSettleMilliseconds": 932.8041999999987,
+            "roundTripMilliseconds": 1765.5727000000043,
+            "idleWaitPerStepMilliseconds": 400
+          },
+          "canvasCreations": {
+            "interaction": 80000,
+            "includingSettledProbe": 88000
+          },
+          "importAndSaveMilliseconds": 1104.4850000000006,
+          "drawingCommandMilliseconds": 539.9372999999978,
+          "drawingSaveMilliseconds": 1019.853200000005,
+          "panPairCommandMilliseconds": {
+            "samples": 10,
+            "p50": 1314.2441000000035,
+            "p95": 1351.6895999999979,
+            "max": 1351.6895999999979
+          },
+          "zoomPairCommandMilliseconds": {
+            "samples": 10,
+            "p50": 884.8530000000028,
+            "p95": 1026.357299999996,
+            "max": 1026.357299999996
+          },
+          "animationFrameIntervalMilliseconds": {
+            "samples": 965,
+            "p50": 16.69999999999891,
+            "p95": 16.80000000000291,
+            "max": 416.7999999999993
+          },
+          "intervalsOver50ms": 24,
+          "longTaskMilliseconds": {
+            "samples": 23,
+            "p50": 346,
+            "p95": 416,
+            "max": 416
+          },
+          "longTasksSupported": true,
+          "memory": [
+            {
+              "seconds": 0,
+              "usedJSHeapBytes": 38755652
+            },
+            {
+              "seconds": 24.151664299999997,
+              "usedJSHeapBytes": 16808088
+            }
+          ],
+          "errors": [],
+          "finalSceneHash": "57aa8bf8d4c7d233889b54f4c1029e3b496e28db6f65232e519a058ca0fa1d56",
+          "note": "Headless Chromium production preview; SW blocked, no relay. Dense rectangles. RAF intervals are callback scheduling, not GPU frame rate. Commands include Playwright transport and deliberate frame pacing. Heap samples do not prove a leak; no forced GC. Drawing is measured once; sustained workload pans, zooms and nudges the selected object. Sample includes a final stopped-zoom probe with 400 ms explicit idle per step; interactionSeconds separates cycling. canvasCreations counts document.createElement(canvas), not total live canvases or memory."
+        },
+        {
+          "started": "2026-09-30T22:38:01.183Z",
+          "finished": "2026-09-30T22:38:29.868Z",
+          "sourceCommit": "6844ba0857ce586a7dfca20563880deab6c31bc8",
+          "dirtyPaths": "",
+          "artifactHash": "5cf0590e40d5d9784e417305e834314a0f784249a443d13703a5fe146db3f1f8",
+          "artifactDirectory": "test-results/performance-before",
+          "profiling": false,
+          "browser": "140.0.7339.186",
+          "node": "v24.19.0",
+          "platform": "win32",
+          "osRelease": "10.0.26300",
+          "cpu": "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz",
+          "totalMemoryBytes": 17092825088,
+          "viewport": {
+            "width": 1440,
+            "height": 1000
+          },
+          "devicePixelRatio": 1,
+          "objects": 500,
+          "requestedSeconds": 20,
+          "interactionSeconds": 20.5071053,
+          "measuredSeconds": 21.649750700000002,
+          "cycles": 15,
+          "settledZoomProbe": {
+            "zoomInCommandMilliseconds": 136.90840000000026,
+            "zoomInAndSettleMilliseconds": 571.8931999999986,
+            "roundTripMilliseconds": 1137.1447999999982,
+            "idleWaitPerStepMilliseconds": 400
+          },
+          "canvasCreations": {
+            "interaction": 30000,
+            "includingSettledProbe": 32000
+          },
+          "importAndSaveMilliseconds": 406.36720000000014,
+          "drawingCommandMilliseconds": 484.7760000000003,
+          "drawingSaveMilliseconds": 408.51770000000033,
+          "panPairCommandMilliseconds": {
+            "samples": 15,
+            "p50": 1103.5658000000003,
+            "p95": 1135.5544999999984,
+            "max": 1135.5544999999984
+          },
+          "zoomPairCommandMilliseconds": {
+            "samples": 15,
+            "p50": 285.0745999999999,
+            "p95": 320.4347999999991,
+            "max": 320.4347999999991
+          },
+          "animationFrameIntervalMilliseconds": {
+            "samples": 1166,
+            "p50": 16.69999999999891,
+            "p95": 16.799999999999272,
+            "max": 116.70000000000073
+          },
+          "intervalsOver50ms": 32,
+          "longTaskMilliseconds": {
+            "samples": 32,
+            "p50": 94,
+            "p95": 114,
+            "max": 118
+          },
+          "longTasksSupported": true,
+          "memory": [
+            {
+              "seconds": 0,
+              "usedJSHeapBytes": 14868232
+            },
+            {
+              "seconds": 21.649750700000002,
+              "usedJSHeapBytes": 9787564
+            }
+          ],
+          "errors": [],
+          "finalSceneHash": "d6206995a7e9fe8a2904c7fc6591ea7b0392fd2bafa454d78b2374fc806319eb",
+          "note": "Headless Chromium production preview; SW blocked, no relay. Dense rectangles. RAF intervals are callback scheduling, not GPU frame rate. Commands include Playwright transport and deliberate frame pacing. Heap samples do not prove a leak; no forced GC. Drawing is measured once; sustained workload pans, zooms and nudges the selected object. Sample includes a final stopped-zoom probe with 400 ms explicit idle per step; interactionSeconds separates cycling. canvasCreations counts document.createElement(canvas), not total live canvases or memory."
+        }
+      ]
+    }
+  ]
+}
