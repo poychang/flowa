@@ -1,6 +1,6 @@
 # Flowa 開發狀態
 
-更新日期：2026-09-30。PWA、離線保護、跨瀏覽器／跨裝置模擬、HTTPS／WSS 實機工具、背景返回保護及重連量測已合併至 main（`ab268c0`）。效能基準 PR #9 已合併至重連測試分支；本分支另完成自動儲存序列化批次與純檢視通知過濾，CPU 取樣確認此部分成本下降，但整體繪製停頓仍待改善。實際 iPad 驗收與雲端部署仍未完成。
+更新日期：2026-09-30。PWA、離線保護、跨瀏覽器／跨裝置模擬、HTTPS／WSS 實機工具、背景返回保護及重連量測已合併至 main（`ab268c0`）。PR #9 的效能基準先合併至重連測試分支，相關變更由目前以 main 為目標的 PR #10 帶入；本分支另完成自動儲存序列化批次與純檢視通知過濾，CPU 取樣確認此部分成本下降，但整體繪製停頓仍待改善。實際 iPad 驗收與雲端部署仍未完成。
 
 工作副本位於 `C:/Users/Nova/Documents/Codex/2026-09-22/flowa`，規格來源為桌面 `code/flowa` 的文件。GitHub 為 https://github.com/poychang/flowa ，多人協作（PR #1）、PWA（PR #2）、跨瀏覽器回歸（PR #3）、房間重載／跨裝置模擬（PR #4）、HTTPS／WSS 工具（PR #5）及背景返回保護（PR #6）皆已合併。PR #6 包含 `ee77400` 修正：前景恢復失敗會斷開連線，避免其他協作者持續等待 ACK。
 
@@ -74,7 +74,7 @@ Windows 本機 Firefox 曾受並列設定錯誤阻擋；上述 Firefox 成功結
 
 `a9b6da8` 的 [CI](https://github.com/poychang/flowa/actions/runs/36664242120) 通過 102 項測試、2 組 relay 重連短測及型別／建置。本機 500／2,000 物件各完成 5 分鐘操作與資料檢查；RAF 間隔 p95 分別為 33.4／50 ms，主執行緒長任務最大值 1,017／1,491 ms。原始數據、場景與解讀見 [瀏覽器效能報告](docs/testing/browser-performance.md)。此為單次 headless Chromium 基準，不是效能驗收全面通過。
 
-PR #8 已合併至 main `ab268c0`；PR #9 隨後合併至 `test/reconnect-soak`（`bb930bf`），因此尚未進入 main。本分支以 `bb930bf` 為基底，包含 `efa7277` 的短測輪數與實際重載匯出修正；該修正的 [CI](https://github.com/poychang/flowa/actions/runs/36685124075) 通過。PR #10 以 main 為目標，帶入效能基準及本次改善。
+PR #8 已合併至 main `ab268c0`；PR #9 先合併至 `test/reconnect-soak`（`bb930bf`），其變更尚未進入 main。本分支以 `bb930bf` 為基底，包含 `efa7277` 的短測輪數與實際重載匯出修正；該修正的 [CI](https://github.com/poychang/flowa/actions/runs/36685124075) 通過。PR #10 直接以 main 為目標，帶入 PR #9 的效能工具及本次改善，未執行遠端合併。
 
 `7f5b6f5` 本機通過 26 項單元測試、34 項 Chromium 回歸、型別與正式建置。2,000 物件獨立 CPU 取樣的場景序列化累計時間由 3,386 ms 降至 105 ms。初期順序量測部分數值變差，追加固定產物「前、後、後、前」短測後，每輪平均約 2,522 → 2,279 ms，但縮放尾端延遲及 long task 沒有一致改善；詳見 [自動儲存效能改善與全部原始數據](docs/testing/canvas-save-performance.md)。
 

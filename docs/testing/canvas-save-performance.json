@@ -764,7 +764,8 @@
         "finalSceneHash": "54e7511f36b2639c869c1bbe91661c0954097a8f899df0f819bfa9fddd86407e",
         "note": "Headless Chromium production preview; SW blocked, no relay. Dense rectangles. RAF intervals are callback scheduling, not GPU frame rate. Commands include Playwright transport and deliberate frame pacing. Heap samples do not prove a leak; no forced GC. Drawing is measured once; sustained workload pans, zooms and nudges the selected object."
       },
-      "sha256": "53fe8cf440f0ffae932fd6ec18458d070dc4e5f767a01137d5f33232d900535f",
+      "decompressedSha256": "53fe8cf440f0ffae932fd6ec18458d070dc4e5f767a01137d5f33232d900535f",
+      "compressedSha256": "a5d31d414561d19a47b872ca1ca5e2dac6ad4eb0c7331682c47023166812244a",
       "sampledMilliseconds": 20946.595,
       "serialization": {
         "functionName": "y1",
@@ -842,7 +843,8 @@
         "finalSceneHash": "b11a39ee7b2555f0d4f26a9232975c26e42390f06db725382ccbd7e2e2ed3491",
         "note": "Headless Chromium production preview; SW blocked, no relay. Dense rectangles. RAF intervals are callback scheduling, not GPU frame rate. Commands include Playwright transport and deliberate frame pacing. Heap samples do not prove a leak; no forced GC. Drawing is measured once; sustained workload pans, zooms and nudges the selected object."
       },
-      "sha256": "dba65e543587c99ae4c237da95193100c33bad7fee8939dcaa8bac7c339b81cf",
+      "decompressedSha256": "dba65e543587c99ae4c237da95193100c33bad7fee8939dcaa8bac7c339b81cf",
+      "compressedSha256": "0ada2360ec3c32879997fdb0a0b4bc19d7707e6cea6f417f839b034ae3700abc",
       "sampledMilliseconds": 21430.968,
       "serialization": {
         "functionName": "ef",
