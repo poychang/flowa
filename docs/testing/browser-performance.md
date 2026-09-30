@@ -19,6 +19,10 @@ pnpm test:performance --output test-results/performance-full
 
 工具在 `127.0.0.1:5183` 啟動 Vite 正式預覽，固定 1440×1000 viewport、單一 worker、無重試，關閉 trace 以減少量測干擾。Service Worker 被測試環境阻擋，PWA 殼層可能顯示離線準備失敗；PWA 行為由既有獨立測試驗證。這裡不使用 relay，也不量測網路協作。
 
+定位瓶頸時可另設 `$env:PERF_PROFILE='1'`，每組會輸出 Chromium `.cpuprofile`。用 `node scripts/summarize-cpu-profile.mjs <檔案路徑>` 產生函式自身／含子呼叫的取樣時間；含子呼叫時間不可相加，函式名稱與位置須對照同一份正式 bundle。一般時間對照應移除此環境變數或設為 `0`，避免把 profiler 額外成本混入結果。JSON 的 `profiling` 欄位記錄此模式。
+
+交錯比較時，可將兩份完整 `dist` 分別複製為 `test-results/performance-before` 與 `test-results/performance-after`，設定 `PERF_ARTIFACT=before` 或 `after` 選擇固定產物。預設 `current` 使用 `dist`；其他值會拒絕啟動。報告記錄 `artifactDirectory`，內容雜湊使用一致的 `dist/` 相對前綴，因此同一份產物移到比較目錄不會改變雜湊。`sourceCommit` 仍指測試 checkout，固定產物的來源須另外記錄，不能把它當成建置來源證明。
+
 報告與最後畫面放在每個案例的輸出目錄；測試失敗保留 screenshot。每次量測前必須重新建置，避免使用舊的 `dist`。JSON 記錄來源提交、相關來源是否未提交、正式產物目錄的內容雜湊、瀏覽器／Node／OS／CPU、記憶體容量、viewport 與 devicePixelRatio。
 
 ## 場景與操作
@@ -69,5 +73,7 @@ pnpm test:performance --output test-results/performance-full
 **資料保護檢查通過，但此結果不能判定操作流暢。** 兩組皆觀察到超過一秒的主執行緒長任務，2,000 物件的長任務 p95 達 883 ms，需優先調查。不同組的命令時間不呈一致比例，不能把所有差異歸因於物件數，也不從 RAF 數字換算或宣稱 GPU FPS。Heap 中途有回落，僅憑本次取樣無法判定記憶體洩漏。
 
 下一步使用獨立 CPU profile 定位繪製、場景序列化及儲存排程的成本，確認瓶頸後再做修改，並在相同硬體與負載下比較。正式 Safari／iPad、觸控筆、文字／箭頭等其他內容、GPU 呈現及更長時間操作仍待驗證；2,000 是資料數量上限，不是流暢度保證。
+
+後續已針對序列化成本實作儲存批次及純檢視通知過濾，方法、對照與剩餘瓶頸見 [自動儲存效能改善](canvas-save-performance.md)。以上數據保留為修改前的歷史基準。
 
 程式提交的 [CI](https://github.com/poychang/flowa/actions/runs/36664242120) 通過 102 項測試（既有 100 項＋2 項效能短測）、2 組 relay 重連短測，以及型別／全部建置。CI 成功表示操作與資料斷言通過，不表示解決上述停頓。

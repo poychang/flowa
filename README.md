@@ -75,6 +75,8 @@ MVP 不使用 tldraw、PostgreSQL、Redis、Blob Storage、獨立 ASP.NET Core A
 
 桌面 Chromium 的 [500／2,000 物件各 5 分鐘操作基準](docs/testing/browser-performance.md) 已建立，儲存／匯出／重載檢查通過，但觀察到超過一秒的主執行緒長任務；停頓仍待定位與改善，不能將物件上限視為流暢度保證。
 
+目前另完成 [自動儲存序列化批次](docs/testing/canvas-save-performance.md)，減少平移／縮放時的 JSON 重複工作。CPU 取樣與固定產物交錯短測呈現部分成本下降，但縮放尾端延遲與繪製停頓仍待改善。
+
 ## 專案結構
 
 | 路徑 | 用途 |
@@ -99,7 +101,7 @@ pnpm dev:all
 
 開啟 `http://127.0.0.1:5173`，輸入顯示名稱後建立房間，再把「編輯連結」或「唯讀連結」貼到另一個瀏覽器環境。預設只綁定本機；其他裝置無法使用此 loopback 網址。僅開發單人畫布可執行 `pnpm dev`。
 
-截至 2026-09-30，PWA、跨瀏覽器核心回歸、房間重新載入、平板觸控模擬、HTTPS／WSS 實機工具及 [背景返回與資料保護](docs/testing/foreground-recovery.md) 已合併至 main（adbfae4，PR #1～#6）。該版本 [CI](https://github.com/poychang/flowa/actions/runs/36509605793) 100 項測試及型別／建置皆通過。另已完成目前 relay 的 [2 人／4 人各 30 分鐘斷線重連量測](docs/testing/reconnect-soak.md)；畫布停頓改善、iPad 實機與雲端部署仍待完成。完整命令、測試數量及待辦順序見 [DEVELOPMENT.md](./DEVELOPMENT.md)；另見 [跨瀏覽器回歸](docs/testing/cross-browser.md)、[跨裝置驗收](docs/testing/device-acceptance.md) 及 [協作操作文件](docs/collaboration.md)。
+截至 2026-09-30，main 為 `ab268c0`（PR #1～#8 已合併），包含 PWA、跨瀏覽器／裝置模擬、HTTPS／WSS 實機工具、[背景返回與資料保護](docs/testing/foreground-recovery.md) 及 [2 人／4 人各 30 分鐘斷線重連量測](docs/testing/reconnect-soak.md)。效能基準 PR #9 合併於重連測試分支；本分支另有自動儲存改善，`7f5b6f5` 的 [CI](https://github.com/poychang/flowa/actions/runs/36689002128) 通過 108 項測試與 2 組重連短測，待 PR #10 合併至 main。畫布繪製停頓、iPad 實機與雲端部署仍待完成。完整命令及待辦見 [DEVELOPMENT.md](./DEVELOPMENT.md)、[跨瀏覽器回歸](docs/testing/cross-browser.md)、[跨裝置驗收](docs/testing/device-acceptance.md) 及 [協作操作文件](docs/collaboration.md)。
 
 單人模式須能在協作後端未設定或不可用時獨立運作。正式託管使用 HTTPS／WSS，瀏覽器直接連至 F1，不依賴 Static Web Apps 的 API 代理。
 

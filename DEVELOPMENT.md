@@ -1,6 +1,6 @@
 # Flowa 開發狀態
 
-更新日期：2026-09-30。PWA、離線保護、跨瀏覽器／跨裝置模擬、HTTPS／WSS 實機工具及背景返回保護已合併。已合併程式驗證基準為 `adbfae4`，100 項 CI 測試通過；本分支另完成桌面 Chromium 效能基準，觀察到主執行緒停頓，尚待定位與改善。實際 iPad 驗收與雲端部署仍未完成。
+更新日期：2026-09-30。PWA、離線保護、跨瀏覽器／跨裝置模擬、HTTPS／WSS 實機工具、背景返回保護及重連量測已合併至 main（`ab268c0`）。效能基準 PR #9 已合併至重連測試分支；本分支另完成自動儲存序列化批次與純檢視通知過濾，CPU 取樣確認此部分成本下降，但整體繪製停頓仍待改善。實際 iPad 驗收與雲端部署仍未完成。
 
 工作副本位於 `C:/Users/Nova/Documents/Codex/2026-09-22/flowa`，規格來源為桌面 `code/flowa` 的文件。GitHub 為 https://github.com/poychang/flowa ，多人協作（PR #1）、PWA（PR #2）、跨瀏覽器回歸（PR #3）、房間重載／跨裝置模擬（PR #4）、HTTPS／WSS 工具（PR #5）及背景返回保護（PR #6）皆已合併。PR #6 包含 `ee77400` 修正：前景恢復失敗會斷開連線，避免其他協作者持續等待 ACK。
 
@@ -44,6 +44,7 @@ pnpm build:relay
 - GitHub Actions 驗證工作流程；30 分鐘量測另由手動命令執行。
 - `pnpm test:soak`：2 人／4 人各 30 分鐘、每組 5 次斷線重連與離線修改保留檢查；CI 使用 24 秒短測。
 - `pnpm test:performance`：正式產物、500／2,000 物件各 5 分鐘，量測平移／縮放／移動物件、RAF 排程、long tasks 與 JS heap；同時驗證儲存／匯出／重載，CI 使用每組 6 秒短測。
+- 自動儲存先偵測元素／持久化狀態／檔案變更，再於儲存批次序列化；連續編輯不重設首個 500 ms 計時截止，立即 flush 與失敗重試仍保留最新內容。`PERF_PROFILE=1` 可獨立輸出 CPU profile。
 
 ## 驗證結果
 
@@ -73,7 +74,11 @@ Windows 本機 Firefox 曾受並列設定錯誤阻擋；上述 Firefox 成功結
 
 `a9b6da8` 的 [CI](https://github.com/poychang/flowa/actions/runs/36664242120) 通過 102 項測試、2 組 relay 重連短測及型別／建置。本機 500／2,000 物件各完成 5 分鐘操作與資料檢查；RAF 間隔 p95 分別為 33.4／50 ms，主執行緒長任務最大值 1,017／1,491 ms。原始數據、場景與解讀見 [瀏覽器效能報告](docs/testing/browser-performance.md)。此為單次 headless Chromium 基準，不是效能驗收全面通過。
 
-本分支基於 PR #8 的 `204ca09`，保留「必須完成全部預定重連次數」的修正；PR #8 尚未合併，因此效能 PR #9 暫以 `test/reconnect-soak` 為基底。合併 #8 後再將 #9 改以 main 為基底。
+PR #8 已合併至 main `ab268c0`；PR #9 隨後合併至 `test/reconnect-soak`（`bb930bf`），因此尚未進入 main。本分支以 `bb930bf` 為基底，包含 `efa7277` 的短測輪數與實際重載匯出修正；該修正的 [CI](https://github.com/poychang/flowa/actions/runs/36685124075) 通過。PR #10 以 main 為目標，帶入效能基準及本次改善。
+
+`7f5b6f5` 本機通過 26 項單元測試、34 項 Chromium 回歸、型別與正式建置。2,000 物件獨立 CPU 取樣的場景序列化累計時間由 3,386 ms 降至 105 ms。初期順序量測部分數值變差，追加固定產物「前、後、後、前」短測後，每輪平均約 2,522 → 2,279 ms，但縮放尾端延遲及 long task 沒有一致改善；詳見 [自動儲存效能改善與全部原始數據](docs/testing/canvas-save-performance.md)。
+
+該提交的 [CI](https://github.com/poychang/flowa/actions/runs/36689002128) 通過 108 項測試（既有 102 項加 6 項單元測試）、2 組 relay 重連短測，以及型別／全部建置。
 
 協作僅支援文字與向量圖形。場景限制為 2,000 個物件（含刪除標記）及 10 MiB；全服務最多 4 條協作連線。畫布同步是整個物件版本合併，沒有字元級文字 CRDT；同物件同時修改仍可能只保留勝出版本。
 
@@ -85,7 +90,7 @@ Windows 本機 Firefox 曾受並列設定錯誤阻擋；上述 Firefox 成功結
 
 | 順序 | 待辦 | 完成條件與前置需求 |
 | --- | --- | --- |
-| 1 | 定位並改善畫布停頓 | 桌面 Chromium 基準已完成；以獨立 CPU profile 分析繪製、序列化與儲存排程，確認瓶頸後優化，並用相同場景比較及擴充其他內容／裝置驗證 |
+| 1 | 繼續改善畫布繪製停頓 | 已減少自動儲存序列化工作；優先分析縮放時 canvas 重建／繪製成本，以更受控的重複對照確認端到端改善，並擴充文字／箭頭／圖片及其他裝置驗證 |
 | 2 | iPad／Safari 實機驗收 | 先準備裝置、LAN 位址與受信任憑證，再依 [環境文件](docs/testing/device-environment.md) 及 [驗收清單](docs/testing/device-acceptance.md) 記錄安裝、離線、鎖屏、鍵盤、旋轉及觸控筆結果 |
 | 3 | Beta 部署準備 | 在目標環境重新核對 Azure 免費方案、區域與配額，補部署／回滾流程、冷啟動驗證、安全檢查及第三方授權聲明 |
 

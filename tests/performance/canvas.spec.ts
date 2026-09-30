@@ -3,7 +3,8 @@ import { createHash } from 'node:crypto';
 import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { cpus, totalmem, platform, release } from 'node:os';
-import { join } from 'node:path';
+import { join, relative } from 'node:path';
+import { artifactDirectory } from './artifact';
 import { rectangle, scene } from '../browser/fixtures';
 import { drawRectangle } from '../browser/draw';
 import { canonical } from '../../packages/protocol';
@@ -15,13 +16,13 @@ const summarize = (values: number[]) => {
   const sorted = [...values].sort((a, b) => a - b);
   return { samples: sorted.length, p50: sorted[Math.floor(sorted.length * .5)] ?? null, p95: sorted[Math.floor(sorted.length * .95)] ?? null, max: sorted.at(-1) ?? null };
 };
-async function buildHash(root = 'dist'): Promise<string> {
+async function buildHash(root = artifactDirectory): Promise<string> {
   const entries: string[] = [];
   async function visit(directory: string) {
     for (const entry of await readdir(directory, { withFileTypes: true })) {
       const path = join(directory, entry.name);
       if (entry.isDirectory()) await visit(path);
-      else entries.push(`${path.replaceAll('\\', '/')}:${sha(await readFile(path))}`);
+      else entries.push(`dist/${relative(root, path).replaceAll('\\', '/')}:${sha(await readFile(path))}`);
     }
   }
   await visit(root); return sha(entries.sort().join('\n'));
@@ -136,7 +137,7 @@ for (const count of [500, 2000]) test(`${count} objects preserve data during sus
   for await (const chunk of reloadedStream!) reloadedChunks.push(chunk);
   expect(sha(canonical({ elements: JSON.parse(Buffer.concat(reloadedChunks).toString()).elements }))).toBe(finalHash);
   expect(errors).toEqual([]);
-  const report = { started, finished: new Date().toISOString(), sourceCommit, dirtyPaths, artifactHash, profiling,
+  const report = { started, finished: new Date().toISOString(), sourceCommit, dirtyPaths, artifactHash, artifactDirectory, profiling,
     browser: browser.version(), node: process.version, platform: platform(), osRelease: release(), cpu: cpus()[0]?.model, totalMemoryBytes: totalmem(),
     viewport: page.viewportSize(), devicePixelRatio: await page.evaluate(() => devicePixelRatio), objects: count, requestedSeconds: seconds, measuredSeconds, cycles,
     importAndSaveMilliseconds, drawingCommandMilliseconds, drawingSaveMilliseconds,
