@@ -4,13 +4,16 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  '@excalidraw/excalidraw@0.18.1': 862d840b6e7e7c32e72901497137ea9582d5796f1cfce46710920c1f9aa3dee3
+
 importers:
 
   .:
     dependencies:
       '@excalidraw/excalidraw':
         specifier: 0.18.1
-        version: 0.18.1(@types/react-dom@18.3.7(@types/react@18.3.10))(@types/react@18.3.10)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 0.18.1(patch_hash=862d840b6e7e7c32e72901497137ea9582d5796f1cfce46710920c1f9aa3dee3)(@types/react-dom@18.3.7(@types/react@18.3.10))(@types/react@18.3.10)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       idb:
         specifier: 8.0.3
         version: 8.0.3
@@ -1791,7 +1794,7 @@ snapshots:
   '@esbuild/win32-x64@0.25.12':
     optional: true
 
-  '@excalidraw/excalidraw@0.18.1(@types/react-dom@18.3.7(@types/react@18.3.10))(@types/react@18.3.10)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+  '@excalidraw/excalidraw@0.18.1(patch_hash=862d840b6e7e7c32e72901497137ea9582d5796f1cfce46710920c1f9aa3dee3)(@types/react-dom@18.3.7(@types/react@18.3.10))(@types/react@18.3.10)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@braintree/sanitize-url': 6.0.2
       '@excalidraw/laser-pointer': 1.3.1
