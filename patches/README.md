@@ -5,6 +5,8 @@
 - 呼叫現有的 `resetShouldCacheIgnoreZoomDebounced()`。
 - 在 action 回傳的 app state 設定 `shouldCacheIgnoreZoom: true`。
 
+修補涉及的上游程式授權保留於 [EXCALIDRAW-LICENSE](EXCALIDRAW-LICENSE)，來源為 [Excalidraw v0.18.1 LICENSE](https://raw.githubusercontent.com/excalidraw/excalidraw/v0.18.1/LICENSE)。
+
 這讓鍵盤與工具列按鈕跟現有 Ctrl／Cmd＋滾輪路徑使用相同的暫時快取策略。最近一次縮放後 300 ms，原有 debounce 會恢復 `false`，在目前縮放倍率重建清晰的物件 canvas。既有 debounce 也檢查元件是否已卸載。沒有新增永久快取、改變縮放步幅／中心點／上限，或跳過停止後的重繪。
 
 修補透過 `pnpm-workspace.yaml` 的 `patchedDependencies` 與鎖檔套用；`pnpm install --frozen-lockfile` 必須成功，不能略過 patch 錯誤。沒有升級套件版本。正式 bundle 的原始碼為 minified，因此該部分 diff 行較長；語意變更與可讀的 dev bundle 相同。
