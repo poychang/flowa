@@ -21,6 +21,11 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm test:relay
+      - run: pnpm test:soak
+        env:
+          SOAK_SECONDS: 24
+          SOAK_RECONNECT_SECONDS: 8
+          SOAK_OFFLINE_SECONDS: 2
       - run: pnpm test:device-server
       - run: pnpm exec playwright install --with-deps chromium firefox webkit
       - run: pnpm test:e2e
