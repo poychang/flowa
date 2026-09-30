@@ -22,6 +22,7 @@
     "tests",
     "playwright.config.ts",
     "playwright.devices.config.ts",
-    "playwright.pwa.config.ts"
+    "playwright.pwa.config.ts",
+    "playwright.performance.config.ts"
   ]
 }
