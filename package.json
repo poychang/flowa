@@ -20,6 +20,7 @@
     "dev:relay": "node --env-file-if-exists=.env.local --experimental-transform-types apps/relay/main.ts",
     "test:relay": "node --experimental-transform-types --test tests/relay/*.test.ts",
     "test:soak": "node --experimental-transform-types tests/relay/reconnect-soak.ts",
+    "test:performance": "playwright test --config playwright.performance.config.ts",
     "build:relay": "tsc -p tsconfig.relay.json",
     "dev:all": "node --env-file-if-exists=.env.local scripts/dev.mjs"
   },

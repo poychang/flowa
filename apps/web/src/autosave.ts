@@ -2,7 +2,7 @@ export type SaveStatus = 'saving' | 'saved' | 'failed';
 
 /** Serial writes; failures remain dirty until a successful retry. */
 export class Autosave {
-  private pending: string | undefined;
+  private pending: { read: () => string } | undefined;
   private active: Promise<void> | undefined;
   private timer: ReturnType<typeof setTimeout> | undefined;
   private last: string | undefined;
@@ -14,28 +14,37 @@ export class Autosave {
   get dirty() { return this.pending !== undefined || this.active !== undefined; }
   seed(scene: string) { this.last = scene; }
   enqueue(scene: string) {
-    if (scene === this.last) return;
-    this.last = scene;
-    this.pending = scene;
+    if (scene === this.last && !this.dirty) return;
+    this.enqueueLazy(() => scene);
+  }
+  /** Read the latest scene at flush time, rather than serializing every pointer event. */
+  enqueueLazy(read: () => string) {
+    this.pending = { read };
     this.notify('saving');
-    clearTimeout(this.timer);
-    this.timer = setTimeout(() => { void this.flush().catch(() => undefined); }, this.delay);
+    // Keep the first deadline: continuous drawing must not postpone saving forever.
+    if (this.timer === undefined && !this.active) {
+      this.timer = setTimeout(() => { void this.flush().catch(() => undefined); }, this.delay);
+    }
   }
   async flush(): Promise<void> {
     clearTimeout(this.timer);
+    this.timer = undefined;
     if (this.active) return this.active;
     this.active = this.drain();
     try { await this.active; } finally { this.active = undefined; }
   }
   private async drain() {
     while (this.pending !== undefined) {
-      const scene = this.pending;
+      const pending = this.pending;
       this.notify('saving');
-      try { await this.write(scene); }
+      try {
+        const scene = pending.read();
+        if (scene !== this.last) { await this.write(scene); this.last = scene; }
+      }
       catch (error) { this.notify('failed', error); throw error; }
-      if (this.pending === scene) this.pending = undefined;
+      if (this.pending === pending) this.pending = undefined;
     }
     this.notify('saved');
   }
-  dispose() { clearTimeout(this.timer); }
+  dispose() { clearTimeout(this.timer); this.timer = undefined; }
 }

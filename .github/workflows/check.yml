@@ -32,6 +32,9 @@ jobs:
       - run: pnpm test:cross-browser
       - run: pnpm test:devices
       - run: pnpm build
+      - run: pnpm test:performance
+        env:
+          PERF_SECONDS: 6
       - run: pnpm test:pwa
       - run: pnpm build:relay
       - run: pnpm build:devices
