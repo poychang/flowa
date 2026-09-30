@@ -85,6 +85,9 @@ for (const count of [500, 2000]) test(`${count} objects preserve data during sus
   const startingVersion = (await draft(page)).elements.find((element: any) => element.id === drawn.id).version;
 
   const cdp = await context.newCDPSession(page); await cdp.send('Performance.enable');
+  // Profiling is opt-in: keep sampled runs separate from timing baselines.
+  const profiling = process.env.PERF_PROFILE === '1';
+  if (profiling) { await cdp.send('Profiler.enable'); await cdp.send('Profiler.start'); }
   async function heap() { const value = await cdp.send('Performance.getMetrics'); return value.metrics.find(metric => metric.name === 'JSHeapUsedSize')?.value ?? null; }
   const memory: { seconds: number; usedJSHeapBytes: number | null }[] = [{ seconds: 0, usedJSHeapBytes: await heap() }];
   await page.evaluate(() => {
@@ -107,7 +110,14 @@ for (const count of [500, 2000]) test(`${count} objects preserve data during sus
   }
   const measuredSeconds = (performance.now() - workloadAt) / 1000;
   const measured = await page.evaluate(() => window.flowaMeasurement!.stop());
-  memory.push({ seconds: measuredSeconds, usedJSHeapBytes: await heap() }); await cdp.detach();
+  memory.push({ seconds: measuredSeconds, usedJSHeapBytes: await heap() });
+  if (profiling) {
+    const { profile } = await cdp.send('Profiler.stop');
+    const profilePath = info.outputPath(`canvas-${count}.cpuprofile`);
+    await writeFile(profilePath, JSON.stringify(profile));
+    await info.attach('cpu-profile', { path: profilePath, contentType: 'application/json' });
+  }
+  await cdp.detach();
   expect(cycles).toBeGreaterThan(0); expect(measured.intervals.length).toBeGreaterThan(10);
   await expect(zoom).toHaveText(originalZoom);
   await expect.poll(async () => (await draft(page)).elements.find((element: any) => element.id === drawn.id)?.version).toBeGreaterThanOrEqual(startingVersion + cycles);
@@ -126,7 +136,7 @@ for (const count of [500, 2000]) test(`${count} objects preserve data during sus
   for await (const chunk of reloadedStream!) reloadedChunks.push(chunk);
   expect(sha(canonical({ elements: JSON.parse(Buffer.concat(reloadedChunks).toString()).elements }))).toBe(finalHash);
   expect(errors).toEqual([]);
-  const report = { started, finished: new Date().toISOString(), sourceCommit, dirtyPaths, artifactHash,
+  const report = { started, finished: new Date().toISOString(), sourceCommit, dirtyPaths, artifactHash, profiling,
     browser: browser.version(), node: process.version, platform: platform(), osRelease: release(), cpu: cpus()[0]?.model, totalMemoryBytes: totalmem(),
     viewport: page.viewportSize(), devicePixelRatio: await page.evaluate(() => devicePixelRatio), objects: count, requestedSeconds: seconds, measuredSeconds, cycles,
     importAndSaveMilliseconds, drawingCommandMilliseconds, drawingSaveMilliseconds,

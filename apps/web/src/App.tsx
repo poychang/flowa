@@ -4,6 +4,7 @@ import { Excalidraw, MainMenu, exportToBlob, exportToSvg } from '@excalidraw/exc
 import type { ExcalidrawImperativeAPI, ExcalidrawInitialDataState } from '@excalidraw/excalidraw/types';
 import { BoardRepository } from './storage';
 import { Autosave } from './autosave';
+import { SceneChanges } from './scene-changes';
 import { PwaControls } from './pwa';
 import { parseDocument } from './document';
 import { serializeScene, deserializeScene } from './scene';
@@ -71,6 +72,7 @@ function Board({ link, navigate, beforeNavigate }: { link?: RoomLink; navigate: 
   const importing = useRef(false);
   const roomCopyPending = useRef(false);
   const saver = useRef<Autosave>();
+  const sceneChanges = useRef(new SceneChanges());
   const canManageRoom = Boolean(link && role === 'manager');
   const canShareRoom = Boolean(canManageRoom && credentials);
   async function persistRoomCopy() {
@@ -304,7 +306,10 @@ function Board({ link, navigate, beforeNavigate }: { link?: RoomLink; navigate: 
         return true;
       }} onPointerUpdate={({ pointer }) => session.current?.pointer(pointer)} viewModeEnabled={busy || Boolean(link && (role === 'viewer' || (!ready && !['offline', 'expired', 'error'].includes(syncState))))} onChange={(elements, appState, files) => {
         if (!blocked.current && !importing.current && copyAvailable.current) {
-          saver.current!.enqueue(serializeScene(elements, appState, files));
+          // Use Excalidraw's own persisted-state filter, without serializing the full scene.
+          if (sceneChanges.current.changed(elements, serializeScene([], appState, {}), files)) {
+            saver.current!.enqueueLazy(() => serializeScene(elements, appState, files));
+          }
           if (link && !hasRoomCopy) void persistRoomCopy();
         }
         session.current?.changed();
