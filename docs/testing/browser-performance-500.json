@@ -1,0 +1,104 @@
+{
+  "started": "2026-09-30T03:23:44.654Z",
+  "finished": "2026-09-30T03:28:57.629Z",
+  "sourceCommit": "a9b6da80b83bb6f37eb4e55dad7b28f7a0d6b9d0",
+  "dirtyPaths": "",
+  "artifactHash": "f843c3b14106b7c254be1910d6a0d419b6d580d83ca9b405ff23edc568a910f8",
+  "browser": "140.0.7339.186",
+  "node": "v24.19.0",
+  "platform": "win32",
+  "osRelease": "10.0.26300",
+  "cpu": "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz",
+  "totalMemoryBytes": 17092825088,
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "devicePixelRatio": 1,
+  "objects": 500,
+  "requestedSeconds": 300,
+  "measuredSeconds": 300.25914819999997,
+  "cycles": 129,
+  "importAndSaveMilliseconds": 1006.2485999999994,
+  "drawingCommandMilliseconds": 609.2284000000009,
+  "drawingSaveMilliseconds": 889.8401000000003,
+  "panPairCommandMilliseconds": {
+    "samples": 129,
+    "p50": 1292.0794999999925,
+    "p95": 2852.0233000000007,
+    "max": 4381.35089999999
+  },
+  "zoomPairCommandMilliseconds": {
+    "samples": 129,
+    "p50": 631.8343999999925,
+    "p95": 2216.545700000017,
+    "max": 2614.588899999988
+  },
+  "animationFrameIntervalMilliseconds": {
+    "samples": 12604,
+    "p50": 16.69999999999709,
+    "p95": 33.39999999999418,
+    "max": 1066.5999999999913
+  },
+  "intervalsOver50ms": 407,
+  "longTaskMilliseconds": {
+    "samples": 333,
+    "p50": 187,
+    "p95": 625,
+    "max": 1017
+  },
+  "longTasksSupported": true,
+  "memory": [
+    {
+      "seconds": 0,
+      "usedJSHeapBytes": 14621256
+    },
+    {
+      "seconds": 30.079897600000002,
+      "usedJSHeapBytes": 12167316
+    },
+    {
+      "seconds": 60.126000000000005,
+      "usedJSHeapBytes": 12456432
+    },
+    {
+      "seconds": 90.2976341,
+      "usedJSHeapBytes": 12511864
+    },
+    {
+      "seconds": 122.8022668,
+      "usedJSHeapBytes": 12539424
+    },
+    {
+      "seconds": 151.8223223,
+      "usedJSHeapBytes": 12891928
+    },
+    {
+      "seconds": 182.15675710000002,
+      "usedJSHeapBytes": 12933448
+    },
+    {
+      "seconds": 211.1850753,
+      "usedJSHeapBytes": 12941140
+    },
+    {
+      "seconds": 240.1184137,
+      "usedJSHeapBytes": 13431908
+    },
+    {
+      "seconds": 271.7206808,
+      "usedJSHeapBytes": 13026916
+    },
+    {
+      "seconds": 300.25018200000005,
+      "usedJSHeapBytes": 13024112
+    },
+    {
+      "seconds": 300.25914819999997,
+      "usedJSHeapBytes": 13872672
+    }
+  ],
+  "errors": [],
+  "finalSceneHash": "fee1b3f88bae0b79b2a05302075fb54d99fd47fdc0e29a2ab2be132e12278a5f",
+  "note": "Headless Chromium production preview; SW blocked, no relay. Dense rectangles. RAF intervals are callback scheduling, not GPU frame rate. Commands include Playwright transport and deliberate frame pacing. Heap samples do not prove a leak; no forced GC. Drawing is measured once; sustained workload pans, zooms and nudges the selected object."
+}
