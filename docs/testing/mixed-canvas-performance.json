@@ -1,0 +1,628 @@
+{
+  "date": "2026-10-01",
+  "sourceCommit": "c5ec26f34177d2034d8fd9cca3c2d0cb2a667d05",
+  "productBase": "4071da3538f8ee51d1db3a51c5d74fe87bc692b6",
+  "runs": [
+    {
+      "started": "2026-10-01T05:14:48.622Z",
+      "finished": "2026-10-01T05:19:59.205Z",
+      "sourceCommit": "c5ec26f34177d2034d8fd9cca3c2d0cb2a667d05",
+      "dirtyPaths": "",
+      "artifactHash": "9746e61ffbc15af3b085a682ae63ab635213679b584438b842161e7dc63deec0",
+      "artifactDirectory": "dist",
+      "profiling": false,
+      "browser": "140.0.7339.186",
+      "node": "v24.19.0",
+      "platform": "win32",
+      "osRelease": "10.0.26300",
+      "cpu": "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz",
+      "totalMemoryBytes": 17092825088,
+      "workload": "mixed",
+      "elementTypes": {
+        "rectangle": 100,
+        "text": 100,
+        "arrow": 100,
+        "ellipse": 100,
+        "image": 99
+      },
+      "fileContentHash": "b55546d9f9e22658100033508aa32dbefaa74bacb73e6d43718423f9d9dd6d47",
+      "stoppedZoomSamples": [
+        {
+          "afterCycle": 1,
+          "milliseconds": 951.3678999999993,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 5,
+          "milliseconds": 936.991,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 10,
+          "milliseconds": 948.5797999999995,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 15,
+          "milliseconds": 964.3482000000004,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 20,
+          "milliseconds": 981.1682000000001,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 25,
+          "milliseconds": 994.8886999999959,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 30,
+          "milliseconds": 965.3485999999975,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 35,
+          "milliseconds": 944.7177000000011,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 40,
+          "milliseconds": 964.0195000000022,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 45,
+          "milliseconds": 975.050700000007,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 50,
+          "milliseconds": 930.9474999999948,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 55,
+          "milliseconds": 971.8816999999981,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 60,
+          "milliseconds": 947.7799999999988,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 65,
+          "milliseconds": 952.50989999999,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 70,
+          "milliseconds": 961.6160999999993,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 75,
+          "milliseconds": 932.6692000000039,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 80,
+          "milliseconds": 944.2125999999989,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 85,
+          "milliseconds": 966.0632999999943,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 90,
+          "milliseconds": 955.5475999999908,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 95,
+          "milliseconds": 949.2831000000006,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 100,
+          "milliseconds": 946.7014000000199,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 105,
+          "milliseconds": 967.550900000002,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 110,
+          "milliseconds": 964.6505000000179,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 115,
+          "milliseconds": 933.0440999999992,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 120,
+          "milliseconds": 956.8628000000026,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 125,
+          "milliseconds": 992.002999999997,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 130,
+          "milliseconds": 962.3218000000052,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 135,
+          "milliseconds": 975.886599999998,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 140,
+          "milliseconds": 947.3868000000075,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 145,
+          "milliseconds": 944.7727000000014,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 150,
+          "milliseconds": 931.0260000000126,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 155,
+          "milliseconds": 968.5011999999988,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 160,
+          "milliseconds": 962.7385000000068,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 165,
+          "milliseconds": 966.1889999999839,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 170,
+          "milliseconds": 947.6756999999925,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 175,
+          "milliseconds": 964.5439999999944,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 180,
+          "milliseconds": 959.71179999999,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 185,
+          "milliseconds": 945.7703999999794,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 190,
+          "milliseconds": 933.1402000000235,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 195,
+          "milliseconds": 986.1470999999437,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 200,
+          "milliseconds": 942.8052000000025,
+          "canvasCreations": 2000
+        },
+        {
+          "afterCycle": 205,
+          "milliseconds": 945.5592000000179,
+          "canvasCreations": 2000
+        }
+      ],
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "devicePixelRatio": 1,
+      "objects": 500,
+      "requestedSeconds": 300,
+      "interactionSeconds": 300.2764447,
+      "measuredSeconds": 301.27289,
+      "cycles": 208,
+      "settledZoomProbe": {
+        "zoomInCommandMilliseconds": 60.0798000000068,
+        "zoomInAndSettleMilliseconds": 507.921399999992,
+        "roundTripMilliseconds": 991.8242999999784,
+        "idleWaitPerStepMilliseconds": 400
+      },
+      "canvasCreations": {
+        "interaction": 84000,
+        "includingSettledProbe": 86000
+      },
+      "importAndSaveMilliseconds": 615.1493999999998,
+      "drawingCommandMilliseconds": 478.7312000000002,
+      "drawingSaveMilliseconds": 533.2034000000003,
+      "panPairCommandMilliseconds": {
+        "samples": 208,
+        "p50": 1118.6560999999929,
+        "p95": 1217.9188999999897,
+        "max": 1274.5601000000024
+      },
+      "zoomPairCommandMilliseconds": {
+        "samples": 208,
+        "p50": 132.5634999999893,
+        "p95": 150.5266999999949,
+        "max": 168.08559999999125
+      },
+      "animationFrameIntervalMilliseconds": {
+        "samples": 17544,
+        "p50": 16.69999999999709,
+        "p95": 16.79999999998836,
+        "max": 133.39999999999964
+      },
+      "intervalsOver50ms": 86,
+      "longTaskMilliseconds": {
+        "samples": 86,
+        "p50": 121,
+        "p95": 137,
+        "max": 144
+      },
+      "longTasksSupported": true,
+      "memory": [
+        {
+          "seconds": 0,
+          "usedJSHeapBytes": 19885484
+        },
+        {
+          "seconds": 30.588671,
+          "usedJSHeapBytes": 39024028
+        },
+        {
+          "seconds": 62.0181233,
+          "usedJSHeapBytes": 10614792
+        },
+        {
+          "seconds": 91.0666384,
+          "usedJSHeapBytes": 18161328
+        },
+        {
+          "seconds": 120.7601011,
+          "usedJSHeapBytes": 20854804
+        },
+        {
+          "seconds": 150.9125905,
+          "usedJSHeapBytes": 31901076
+        },
+        {
+          "seconds": 180.5415546,
+          "usedJSHeapBytes": 33690864
+        },
+        {
+          "seconds": 210.0382958,
+          "usedJSHeapBytes": 17318672
+        },
+        {
+          "seconds": 240.62316629999998,
+          "usedJSHeapBytes": 13591408
+        },
+        {
+          "seconds": 270.723456,
+          "usedJSHeapBytes": 28534252
+        },
+        {
+          "seconds": 300.2721775,
+          "usedJSHeapBytes": 35797188
+        },
+        {
+          "seconds": 301.27289,
+          "usedJSHeapBytes": 12533780
+        }
+      ],
+      "errors": [],
+      "finalSceneHash": "c3972cbe01c32152c959e7e147ca6f784d05032686cc0602e7721dc6b03b8696",
+      "note": "Headless Chromium production preview; SW blocked, no relay. Workload identifies dense rectangles or mixed shapes, unbound text/arrows and repeated references to one PNG. RAF intervals are callback scheduling, not GPU frame rate. Commands include Playwright transport and deliberate frame pacing. Heap samples do not prove a leak; no forced GC. Drawing is measured once; sustained workload pans, zooms and nudges the selected object. Mixed workload includes stopped zoom after cycle 1 and every 5 cycles; interactionSeconds includes those waits. All runs include a final stopped-zoom probe with 400 ms explicit idle per step. canvasCreations counts document.createElement(canvas), not total live canvases or memory."
+    },
+    {
+      "started": "2026-10-01T05:19:59.456Z",
+      "finished": "2026-10-01T05:25:19.094Z",
+      "sourceCommit": "c5ec26f34177d2034d8fd9cca3c2d0cb2a667d05",
+      "dirtyPaths": "",
+      "artifactHash": "9746e61ffbc15af3b085a682ae63ab635213679b584438b842161e7dc63deec0",
+      "artifactDirectory": "dist",
+      "profiling": false,
+      "browser": "140.0.7339.186",
+      "node": "v24.19.0",
+      "platform": "win32",
+      "osRelease": "10.0.26300",
+      "cpu": "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz",
+      "totalMemoryBytes": 17092825088,
+      "workload": "mixed",
+      "elementTypes": {
+        "rectangle": 400,
+        "text": 400,
+        "arrow": 400,
+        "ellipse": 400,
+        "image": 399
+      },
+      "fileContentHash": "b55546d9f9e22658100033508aa32dbefaa74bacb73e6d43718423f9d9dd6d47",
+      "stoppedZoomSamples": [
+        {
+          "afterCycle": 1,
+          "milliseconds": 1550.9120000000112,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 5,
+          "milliseconds": 1514.5585000000428,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 10,
+          "milliseconds": 1550.2170000000042,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 15,
+          "milliseconds": 1546.088300000003,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 20,
+          "milliseconds": 1493.267899999977,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 25,
+          "milliseconds": 1540.3903000000282,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 30,
+          "milliseconds": 1594.7130999999936,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 35,
+          "milliseconds": 1460.775800000003,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 40,
+          "milliseconds": 1525.9859999999753,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 45,
+          "milliseconds": 1498.710000000021,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 50,
+          "milliseconds": 1533.7784000000102,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 55,
+          "milliseconds": 1487.8768000000273,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 60,
+          "milliseconds": 1474.738000000012,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 65,
+          "milliseconds": 1521.147100000002,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 70,
+          "milliseconds": 1497.5855999999912,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 75,
+          "milliseconds": 1442.9204000000027,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 80,
+          "milliseconds": 1474.5725000000093,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 85,
+          "milliseconds": 1581.3856000000378,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 90,
+          "milliseconds": 1535.0336999999708,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 95,
+          "milliseconds": 1457.65419999999,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 100,
+          "milliseconds": 1494.4512000000104,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 105,
+          "milliseconds": 1502.206300000078,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 110,
+          "milliseconds": 1457.5324000000255,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 115,
+          "milliseconds": 1491.8031999999657,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 120,
+          "milliseconds": 1495.3469999999506,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 125,
+          "milliseconds": 1588.6995999999344,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 130,
+          "milliseconds": 1464.9649999999674,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 135,
+          "milliseconds": 1471.8327000000281,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 140,
+          "milliseconds": 1491.6258999999845,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 145,
+          "milliseconds": 1490.3782000000356,
+          "canvasCreations": 8000
+        },
+        {
+          "afterCycle": 150,
+          "milliseconds": 1472.9133999999613,
+          "canvasCreations": 8000
+        }
+      ],
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "devicePixelRatio": 1,
+      "objects": 2000,
+      "requestedSeconds": 300,
+      "interactionSeconds": 300.5919324999999,
+      "measuredSeconds": 302.0499335999999,
+      "cycles": 153,
+      "settledZoomProbe": {
+        "zoomInCommandMilliseconds": 118.82010000001173,
+        "zoomInAndSettleMilliseconds": 753.8695000000298,
+        "roundTripMilliseconds": 1451.5394999999553,
+        "idleWaitPerStepMilliseconds": 400
+      },
+      "canvasCreations": {
+        "interaction": 248000,
+        "includingSettledProbe": 256000
+      },
+      "importAndSaveMilliseconds": 1705.7065000000293,
+      "drawingCommandMilliseconds": 528.1067999999505,
+      "drawingSaveMilliseconds": 1277.493199999968,
+      "panPairCommandMilliseconds": {
+        "samples": 153,
+        "p50": 1403.5828999999794,
+        "p95": 1501.7826999999816,
+        "max": 1579.0123000000603
+      },
+      "zoomPairCommandMilliseconds": {
+        "samples": 153,
+        "p50": 215.40830000001006,
+        "p95": 248.97549999994226,
+        "max": 424.4006999999983
+      },
+      "animationFrameIntervalMilliseconds": {
+        "samples": 15851,
+        "p50": 16.69999999999709,
+        "p95": 16.80000000000291,
+        "max": 450
+      },
+      "intervalsOver50ms": 150,
+      "longTaskMilliseconds": {
+        "samples": 84,
+        "p50": 382,
+        "p95": 416,
+        "max": 454
+      },
+      "longTasksSupported": true,
+      "memory": [
+        {
+          "seconds": 0,
+          "usedJSHeapBytes": 67487280
+        },
+        {
+          "seconds": 30.51755839999998,
+          "usedJSHeapBytes": 17745056
+        },
+        {
+          "seconds": 60.129203999999966,
+          "usedJSHeapBytes": 18123684
+        },
+        {
+          "seconds": 90.74188339999999,
+          "usedJSHeapBytes": 21395880
+        },
+        {
+          "seconds": 121.44546269999998,
+          "usedJSHeapBytes": 30739944
+        },
+        {
+          "seconds": 150.2761987,
+          "usedJSHeapBytes": 30651012
+        },
+        {
+          "seconds": 180.9097379,
+          "usedJSHeapBytes": 25614056
+        },
+        {
+          "seconds": 210.49934519999994,
+          "usedJSHeapBytes": 25654692
+        },
+        {
+          "seconds": 240.5774424,
+          "usedJSHeapBytes": 25531908
+        },
+        {
+          "seconds": 270.557116,
+          "usedJSHeapBytes": 25610684
+        },
+        {
+          "seconds": 300.58745569999996,
+          "usedJSHeapBytes": 25711576
+        },
+        {
+          "seconds": 302.0499335999999,
+          "usedJSHeapBytes": 54991140
+        }
+      ],
+      "errors": [],
+      "finalSceneHash": "c5fa64196df7dc7d2f02884d7e38fd7050143d72db24eba6bd280a3a610ec57f",
+      "note": "Headless Chromium production preview; SW blocked, no relay. Workload identifies dense rectangles or mixed shapes, unbound text/arrows and repeated references to one PNG. RAF intervals are callback scheduling, not GPU frame rate. Commands include Playwright transport and deliberate frame pacing. Heap samples do not prove a leak; no forced GC. Drawing is measured once; sustained workload pans, zooms and nudges the selected object. Mixed workload includes stopped zoom after cycle 1 and every 5 cycles; interactionSeconds includes those waits. All runs include a final stopped-zoom probe with 400 ms explicit idle per step. canvasCreations counts document.createElement(canvas), not total live canvases or memory."
+    }
+  ]
+}
