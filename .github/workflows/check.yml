@@ -41,6 +41,7 @@ jobs:
           PERF_WORKLOAD: mixed
       - run: pnpm test:pwa
       - run: pnpm build:relay
+      - run: pnpm test:relay-launcher
       - run: pnpm build:devices
         env:
           DEVICE_ORIGIN: https://localhost:8443

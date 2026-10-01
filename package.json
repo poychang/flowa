@@ -22,6 +22,9 @@
     "test:soak": "node --experimental-transform-types tests/relay/reconnect-soak.ts",
     "test:performance": "playwright test --config playwright.performance.config.ts",
     "build:relay": "tsc -p tsconfig.relay.json",
+    "start:relay": "node scripts/start-relay.mjs",
+    "check:relay": "node scripts/check-relay.mjs",
+    "test:relay-launcher": "node --test tests/relay-launcher/*.test.mjs",
     "dev:all": "node --env-file-if-exists=.env.local scripts/dev.mjs"
   },
   "dependencies": {
