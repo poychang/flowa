@@ -27,6 +27,8 @@ pnpm test:performance --output test-results/performance-mixed-full
 
 混合場景會比對原始匯入的文字、箭頭座標及圖片引用，並在 IndexedDB、匯出、重載後再匯出逐一比對圖片 ID／MIME type／data URL。Excalidraw 可補入檔案存取時間，因此不將這類 metadata 納入圖片內容比較。CI 另外執行混合場景短測；短測只驗證資料完整性與工具可執行，沒有設定硬體相依的效能門檻。
 
+2026-10-01 的 500／2,000 物件各五分鐘結果與原始數據見 [混合內容報告](mixed-canvas-performance.md)。
+
 工具在 `127.0.0.1:5183` 啟動 Vite 正式預覽，固定 1440×1000 viewport、單一 worker、無重試，關閉 trace 以減少量測干擾。Service Worker 被測試環境阻擋，PWA 殼層可能顯示離線準備失敗；PWA 行為由既有獨立測試驗證。這裡不使用 relay，也不量測網路協作。
 
 定位瓶頸時可另設 `$env:PERF_PROFILE='1'`，每組會輸出 Chromium `.cpuprofile`。用 `node scripts/summarize-cpu-profile.mjs <檔案路徑>` 產生函式自身／含子呼叫的取樣時間；含子呼叫時間不可相加，函式名稱與位置須對照同一份正式 bundle。一般時間對照應移除此環境變數或設為 `0`，避免把 profiler 額外成本混入結果。JSON 的 `profiling` 欄位記錄此模式。
