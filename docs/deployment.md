@@ -62,10 +62,10 @@ pnpm check:relay
 ## 部署與回滾順序
 
 1. 記錄目標來源、提交 SHA、Node／pnpm 版本、協定版本及上一版可回復的來源／產物。正式前端以該 relay 的 HTTPS origin 設定 `VITE_RELAY_URL` 後完整建置；PWA 仍只支援網站根路徑。
-2. 準備一致的 relay 執行目錄：`dist-relay/`、`scripts/start-relay.mjs`、`scripts/check-relay.mjs`、`package.json`、`pnpm-lock.yaml`、`pnpm-workspace.yaml`、`patches/` 及依鎖檔安裝的 dependencies。不得只上傳 `main.js` 或使用 Windows node_modules 作為 Linux 產物。可在 Linux staging 目錄執行 `pnpm install --prod --frozen-lockfile`；若改用根套件安装會一併安裝前端 dependencies。正式候選產物改由 [Linux relay 發布包](relay-release.md) 提供獨立依賴、授權原文及雜湊，不需要在主機重新安裝。
+2. 從已合併 main 的成功 CI 取得 [Linux relay 發布包](relay-release.md)，核對 archive checksum 及 manifest 後解包。包內已有編譯程式、正式依賴與授權原文；目標主機提供 Node.js 24 即可，不重新安裝或編譯，也不使用 Windows node_modules 取代 Linux 產物。
 3. 設定精確的 `ALLOWED_ORIGINS`、平台 PORT、HTTPS 與單執行個體。選定的部署機制不得以未受控的 npm 安裝或重新建置取代已驗證的鎖檔／patch。CI 已提供可核對雜湊的 relay 壓縮包；實際 Azure 上傳與自動發布尚未提供。
 4. 在變更窗口先完成 relay，再執行 `check:relay` 與兩名瀏覽器使用者的建房、分享、編輯、離線返回及 JSON 備份測試；記錄第一次與暖機後 health 耗時。此時房間重建屬預期行為。
 5. 一次發布同一版完整 `dist/`，不要混用舊 HTML、新 assets 或不同 `sw.js`。驗證現有 PWA 的同意更新與更新前副本保護；不能強制清除瀏覽器儲存來掩蓋更新問題。舊分頁可能繼續使用舊程式，若協定不相容須先安排相容過渡與使用者更新。
 6. 發現協定、Origin、PWA 或資料保護問題時，停止新分享並保留使用者 JSON／本機副本；恢復上一版完整前端產物、relay 產物與對應設定，再做健康及兩人編輯檢查。回滾不會恢復記憶體中的房間，也不可任意回退成無法讀取新本機資料格式的版本。
 
-公開 Beta 前仍須完成：Linux 產物的目標環境部署／回滾演練、前端／字型第三方授權彙整、目標區域與免費配額、真正冷啟動／WAN、實機 iPad／Safari 及安全檢查。本文件與本機測試只完成啟動準備，不能標示為已部署。
+公開 Beta 前仍須完成：Linux 產物的目標環境部署／回滾演練、前端／字型第三方授權彙整、目標區域與免費配額、真正冷啟動／WAN、實機 iPad／Safari 及安全檢查。本文件與自動化測試完成啟動及封裝準備，不能標示為已部署。

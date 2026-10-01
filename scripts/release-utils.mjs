@@ -68,6 +68,7 @@ export async function notices(directory) {
 }
 
 export async function verifyRelease(directory) {
+  if (!(await lstat(resolve(directory, 'release-manifest.json'))).isFile()) throw new Error('Release manifest must be a regular file');
   const manifest = JSON.parse(await readFile(resolve(directory, 'release-manifest.json'), 'utf8'));
   if (manifest.format !== 1 || !manifest.files) throw new Error('Unsupported release manifest');
   if (JSON.stringify(await inventory(directory)) !== JSON.stringify(manifest.files)) throw new Error('Release integrity mismatch');

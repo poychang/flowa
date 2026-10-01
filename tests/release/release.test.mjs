@@ -25,6 +25,10 @@ test('release inventory rejects links outside the package and absolute links', {
   await symlink(external, join(root, 'external')); await assert.rejects(inventory(root), /relative/);
   await rm(join(root, 'external')); await symlink('../' + external.split('/').at(-1), join(root, 'external'));
   await assert.rejects(inventory(root), /escapes/);
+  await rm(join(root, 'external'));
+  await writeFile(join(external, 'manifest.json'), '{}');
+  await symlink(join(external, 'manifest.json'), join(root, 'release-manifest.json'));
+  await assert.rejects(verifyRelease(root), /regular file/);
 });
 test('dependency notices preserve original text and fail on missing license files', async t => {
   const root = await directory(t), pkg = join(root, 'node_modules/.pnpm/example@1/node_modules/example');
