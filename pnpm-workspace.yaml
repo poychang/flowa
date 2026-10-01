@@ -1,3 +1,6 @@
+packages:
+  - release/relay
+injectWorkspacePackages: true
 allowBuilds:
   esbuild: true
 patchedDependencies:

@@ -25,6 +25,9 @@
     "start:relay": "node scripts/start-relay.mjs",
     "check:relay": "node scripts/check-relay.mjs",
     "test:relay-launcher": "node --test tests/relay-launcher/*.test.mjs",
+    "package:relay": "node scripts/package-relay.mjs",
+    "verify:relay": "node scripts/verify-relay-release.mjs",
+    "test:release": "node --test tests/release/*.test.mjs",
     "dev:all": "node --env-file-if-exists=.env.local scripts/dev.mjs"
   },
   "dependencies": {

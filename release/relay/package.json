@@ -1,0 +1,16 @@
+{
+  "name": "@flowa/relay-release",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "24.x" },
+  "files": [],
+  "scripts": {
+    "start": "node scripts/start-relay.mjs",
+    "check": "node scripts/check-relay.mjs"
+  },
+  "dependencies": {
+    "socket.io": "4.8.1",
+    "zod": "3.25.76"
+  }
+}

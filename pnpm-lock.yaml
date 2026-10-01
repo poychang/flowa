@@ -3,6 +3,7 @@ lockfileVersion: '9.0'
 settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
+  injectWorkspacePackages: true
 
 patchedDependencies:
   '@excalidraw/excalidraw@0.18.1': 862d840b6e7e7c32e72901497137ea9582d5796f1cfce46710920c1f9aa3dee3
@@ -54,6 +55,15 @@ importers:
       vite:
         specifier: 7.1.3
         version: 7.1.3(@types/node@24.3.0)
+
+  release/relay:
+    dependencies:
+      socket.io:
+        specifier: 4.8.1
+        version: 4.8.1
+      zod:
+        specifier: 3.25.76
+        version: 3.25.76
 
 packages:
 

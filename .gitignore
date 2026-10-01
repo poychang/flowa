@@ -12,3 +12,4 @@ tests/device-server/fixtures/localhost-key.pem
 test-results/
 playwright-report/
 dist-relay/
+release-artifacts/
