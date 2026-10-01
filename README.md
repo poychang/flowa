@@ -101,7 +101,7 @@ pnpm dev:all
 
 開啟 `http://127.0.0.1:5173`，輸入顯示名稱後建立房間，再把「編輯連結」或「唯讀連結」貼到另一個瀏覽器環境。預設只綁定本機；其他裝置無法使用此 loopback 網址。僅開發單人畫布可執行 `pnpm dev`。
 
-截至 2026-10-01，main 為 `5469808`（PR #13 已合併），包含 PWA、跨瀏覽器／裝置模擬、HTTPS／WSS 實機工具、[背景返回與資料保護](docs/testing/foreground-recovery.md)、[斷線重連量測](docs/testing/reconnect-soak.md)、自動儲存與[連續縮放改善](docs/testing/canvas-render-performance.md)。文字、箭頭及圖片的[混合場景五分鐘量測](docs/testing/mixed-canvas-performance.md) 已合併；本分支接續 Linux relay 獨立發布包與包內授權彙整。停止後重繪尖峰、iPad 實機與雲端部署仍待驗收。完整命令及待辦見 [DEVELOPMENT.md](./DEVELOPMENT.md)、[跨瀏覽器回歸](docs/testing/cross-browser.md)、[跨裝置驗收](docs/testing/device-acceptance.md) 及 [協作操作文件](docs/collaboration.md)。
+截至 2026-10-02，開發基準 main 為 `1e91f0d`（PR #14 已合併），包含 PWA、跨瀏覽器／裝置模擬、HTTPS／WSS 實機工具、[背景返回與資料保護](docs/testing/foreground-recovery.md)、[斷線重連量測](docs/testing/reconnect-soak.md)、自動儲存與[連續縮放改善](docs/testing/canvas-render-performance.md)。文字、箭頭及圖片的[混合場景五分鐘量測](docs/testing/mixed-canvas-performance.md) 已合併；Linux relay 獨立發布包已合併；本分支補齊前端與字型授權產物。停止後重繪尖峰、iPad 實機與雲端部署仍待驗收。完整命令及待辦見 [DEVELOPMENT.md](./DEVELOPMENT.md)、[跨瀏覽器回歸](docs/testing/cross-browser.md)、[跨裝置驗收](docs/testing/device-acceptance.md) 及 [協作操作文件](docs/collaboration.md)。
 
 單人模式須能在協作後端未設定或不可用時獨立運作。正式託管使用 HTTPS／WSS，瀏覽器直接連至 F1，不依賴 Static Web Apps 的 API 代理。
 
@@ -118,3 +118,5 @@ Flowa 自有原始碼採用 **MIT License**（SPDX：MIT）。初始化儲存庫
 第三方套件、字型、圖示與資產維持各自授權；鎖定相依版本並保留必要聲明。技術來源與驗收細節見 [plan.md](./plan.md)。
 
 Linux relay 發布包：`pnpm package:relay` 產生含正式依賴、授權原文與 SHA-256 的壓縮包；CI 解包驗證後保留下載產物。詳見 [發布包與授權](docs/relay-release.md)。
+
+前端正式建置會產生可離線閱讀的第三方授權與相依清單，並檢查 8 組字型的內容雜湊；詳見 [前端授權維護](docs/frontend-licenses.md)。

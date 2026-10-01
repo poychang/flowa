@@ -1,3 +1,6 @@
 # Keep pnpm patch hashes identical across Windows and Linux.
 # Unified-diff blank context lines intentionally contain a single space.
 patches/*.patch text eol=lf whitespace=-blank-at-eol
+licenses/** text eol=lf
+# Preserve whitespace in upstream license texts.
+licenses/**/*.txt whitespace=-blank-at-eol
