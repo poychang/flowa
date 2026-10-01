@@ -109,6 +109,8 @@ PWA 須使用正式建置：執行 `pnpm build`、`pnpm preview`，等待「離�
 
 實機驗收可使用 `pnpm build:devices` 與 `pnpm serve:devices` 提供 HTTPS／WSS，須先設定 LAN origin 與裝置信任的憑證；完整步驟見 [實機驗收環境](docs/testing/device-environment.md)。工具不會自動部署 Azure 或安裝 CA。
 
+Beta relay 已提供 `pnpm start:relay` 正式啟動設定檢查、`pnpm check:relay` 健康／協定檢查及編譯產物重啟測試；建置、Linux 目標環境與回滾步驟見 [部署準備](docs/deployment.md)。實際 Azure 部署與配額驗收尚未完成。
+
 ## 授權
 
 Flowa 自有原始碼採用 **MIT License**（SPDX：MIT）。初始化儲存庫時建立標準 LICENSE 檔案，確認著作權人與年份。
