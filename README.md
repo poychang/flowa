@@ -101,7 +101,7 @@ pnpm dev:all
 
 開啟 `http://127.0.0.1:5173`，輸入顯示名稱後建立房間，再把「編輯連結」或「唯讀連結」貼到另一個瀏覽器環境。預設只綁定本機；其他裝置無法使用此 loopback 網址。僅開發單人畫布可執行 `pnpm dev`。
 
-截至 2026-10-01，main 為 `4071da3`（PR #11 已合併），包含 PWA、跨瀏覽器／裝置模擬、HTTPS／WSS 實機工具、[背景返回與資料保護](docs/testing/foreground-recovery.md)、[斷線重連量測](docs/testing/reconnect-soak.md)、自動儲存與[連續縮放改善](docs/testing/canvas-render-performance.md)。本分支的 PR #12 接續文字、箭頭及圖片的混合場景量測，使用方式見 [效能工具](docs/testing/browser-performance.md)。停止後重繪尖峰、iPad 實機與雲端部署仍待驗收。完整命令及待辦見 [DEVELOPMENT.md](./DEVELOPMENT.md)、[跨瀏覽器回歸](docs/testing/cross-browser.md)、[跨裝置驗收](docs/testing/device-acceptance.md) 及 [協作操作文件](docs/collaboration.md)。
+截至 2026-10-01，main 為 `0361b0a`（PR #12 已合併），包含 PWA、跨瀏覽器／裝置模擬、HTTPS／WSS 實機工具、[背景返回與資料保護](docs/testing/foreground-recovery.md)、[斷線重連量測](docs/testing/reconnect-soak.md)、自動儲存與[連續縮放改善](docs/testing/canvas-render-performance.md)。文字、箭頭及圖片的[混合場景五分鐘量測](docs/testing/mixed-canvas-performance.md) 已合併；本分支接續 Beta relay 啟動與部署準備。停止後重繪尖峰、iPad 實機與雲端部署仍待驗收。完整命令及待辦見 [DEVELOPMENT.md](./DEVELOPMENT.md)、[跨瀏覽器回歸](docs/testing/cross-browser.md)、[跨裝置驗收](docs/testing/device-acceptance.md) 及 [協作操作文件](docs/collaboration.md)。
 
 單人模式須能在協作後端未設定或不可用時獨立運作。正式託管使用 HTTPS／WSS，瀏覽器直接連至 F1，不依賴 Static Web Apps 的 API 代理。
 
