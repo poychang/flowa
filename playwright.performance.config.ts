@@ -1,5 +1,6 @@
 import { defineConfig } from '@playwright/test';
 import { artifactDirectory } from './tests/performance/artifact';
+import './tests/performance/workload';
 
 const seconds = Number(process.env.PERF_SECONDS ?? 300);
 if (!Number.isSafeInteger(seconds) || seconds < 5 || seconds > 1800) throw new Error('PERF_SECONDS must be an integer from 5 to 1800');

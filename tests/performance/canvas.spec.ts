@@ -5,7 +5,8 @@ import { execFileSync } from 'node:child_process';
 import { cpus, totalmem, platform, release } from 'node:os';
 import { join, relative } from 'node:path';
 import { artifactDirectory } from './artifact';
-import { rectangle, scene } from '../browser/fixtures';
+import { scene } from '../browser/fixtures';
+import { elements, workload } from './workload';
 import { drawRectangle } from '../browser/draw';
 import { canonical } from '../../packages/protocol';
 
@@ -53,16 +54,32 @@ for (const count of [500, 2000]) test(`${count} objects preserve data during sus
   const artifactHash = await buildHash();
   await page.goto('/'); await expect(page.getByRole('button', { name: '匯入 JSON', exact: true })).toBeEnabled();
   // Reserve one object for a real pointer-drawn rectangle, never exceed 2,000.
-  const initial = Array.from({ length: count - 1 }, (_, i) => rectangle(`perf-${i}`, {
-    index: `a${i.toString(36).padStart(4, '0')}1`, x: 100 + i % 40 * 20, y: 60 + Math.floor(i / 40) * 12,
-    width: 16, height: 8, roughness: 1,
-  }));
+  const initial = elements(count);
+  const files = workload === 'mixed' ? await page.evaluate(() => {
+    const canvas = document.createElement('canvas'); canvas.width = 32; canvas.height = 32;
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = '#e03131'; ctx.fillRect(0, 0, 32, 32);
+    ctx.fillStyle = '#1971c2'; ctx.fillRect(0, 0, 16, 16); ctx.fillRect(16, 16, 16, 16);
+    return { 'perf-image': { id: 'perf-image', mimeType: 'image/png', dataURL: canvas.toDataURL(), created: 1 } };
+  }) : {};
+  const importedDocument = { ...JSON.parse(scene()), elements: initial, files };
   const importAt = performance.now();
-  await page.locator('input[type=file]').setInputFiles({ name: 'performance.json', mimeType: 'application/json', buffer: Buffer.from(scene(initial)) });
+  await page.locator('input[type=file]').setInputFiles({ name: 'performance.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(importedDocument)) });
   await expect.poll(async () => (await draft(page)).elements.length).toBe(count - 1);
   await expect(page.getByRole('button', { name: '匯入 JSON', exact: true })).toBeEnabled();
   const importAndSaveMilliseconds = performance.now() - importAt;
   const sourceElements = (await draft(page)).elements;
+  // Compare against the input too: a lossy import must not become the new golden data.
+  for (const input of initial) {
+    const restored = sourceElements.find((element: any) => element.id === input.id);
+    expect(restored.type).toBe(input.type);
+    if ('text' in input) expect(restored.text).toBe(input.text);
+    if ('points' in input) expect(restored.points).toEqual(input.points);
+    if ('fileId' in input) expect(restored.fileId).toBe(input.fileId);
+  }
+  const fileContent = (value: any) => Object.fromEntries(Object.entries(value ?? {}).map(([id, file]: [string, any]) => [id, { id: file.id, mimeType: file.mimeType, dataURL: file.dataURL }]));
+  expect(fileContent((await draft(page)).files)).toEqual(fileContent(files));
+  await page.evaluate(() => document.fonts.ready);
   await page.waitForTimeout(1000); // Fixed warm-up, outside the sustained sample.
   const drawingAt = performance.now(); await drawRectangle(page, 1050, 450, 120, 90);
   const drawingCommandMilliseconds = performance.now() - drawingAt;
@@ -106,11 +123,22 @@ for (const count of [500, 2000]) test(`${count} objects preserve data during sus
     window.flowaMeasurement = { canvasCreations: () => canvasCreations, stop: () => { document.createElement = createElement; cancelAnimationFrame(id); if (observer) { longTasks.push(...observer.takeRecords().map(entry => entry.duration)); observer.disconnect(); } return { intervals, longTasks, longTasksSupported: supported, canvasCreations }; } };
   });
   const panTimes: number[] = [], zoomTimes: number[] = []; let cycles = 0, sampleAt = 30, progressAt = 60;
+  const stoppedZoomSamples: { afterCycle: number; milliseconds: number; canvasCreations: number }[] = [];
+  async function stoppedZoom() {
+    const before = await page.evaluate(() => window.flowaMeasurement!.canvasCreations());
+    const at = performance.now();
+    await page.keyboard.press('Control+='); await page.waitForTimeout(400); await frames(page);
+    await page.keyboard.press('Control+-'); await page.waitForTimeout(400); await frames(page);
+    stoppedZoomSamples.push({ afterCycle: cycles, milliseconds: performance.now() - at,
+      canvasCreations: await page.evaluate(() => window.flowaMeasurement!.canvasCreations()) - before });
+  }
   const workloadAt = performance.now();
   while (performance.now() - workloadAt < seconds * 1000) {
     let at = performance.now(); await pan(page, 1); await pan(page, -1); panTimes.push(performance.now() - at);
     at = performance.now(); await page.keyboard.press('Control+='); await frames(page); await page.keyboard.press('Control+-'); await frames(page); zoomTimes.push(performance.now() - at);
     await page.keyboard.press(cycles % 2 ? 'ArrowLeft' : 'ArrowRight'); cycles++;
+    // Mixed runs exercise the delayed rebuild repeatedly, including short CI runs.
+    if (workload === 'mixed' && (cycles === 1 || cycles % 5 === 0)) await stoppedZoom();
     const elapsed = (performance.now() - workloadAt) / 1000;
     if (elapsed >= sampleAt) { memory.push({ seconds: elapsed, usedJSHeapBytes: await heap() }); sampleAt += 30; }
     if (elapsed >= progressAt) { console.log(JSON.stringify({ objects: count, elapsedSeconds: Math.floor(elapsed), cycles, errors: errors.length })); progressAt += 60; }
@@ -138,32 +166,44 @@ for (const count of [500, 2000]) test(`${count} objects preserve data during sus
   }
   await cdp.detach();
   expect(cycles).toBeGreaterThan(0); expect(measured.intervals.length).toBeGreaterThan(10);
+  if (workload === 'mixed') {
+    expect(stoppedZoomSamples.length).toBeGreaterThan(0);
+    expect(stoppedZoomSamples.every(sample => sample.canvasCreations > 0)).toBe(true);
+  }
   await expect(zoom).toHaveText(originalZoom);
   await expect.poll(async () => (await draft(page)).elements.find((element: any) => element.id === drawn.id)?.version).toBeGreaterThanOrEqual(startingVersion + cycles);
   await expect(page.getByRole('status')).toHaveText('已存於此裝置');
   const final = (await draft(page)).elements;
+  const finalFiles = fileContent((await draft(page)).files);
+  expect(finalFiles).toEqual(fileContent(files));
   expect(final).toHaveLength(count);
   expect(canonical({ elements: final.filter((element: any) => element.id.startsWith('perf-')) })).toBe(canonical({ elements: sourceElements }));
   const finalHash = sha(canonical({ elements: final }));
   await page.screenshot({ path: info.outputPath(`canvas-${count}.png`) });
   const download = page.waitForEvent('download'); await page.getByRole('button', { name: '備份 JSON ↗' }).click();
   const stream = await (await download).createReadStream(); const chunks: Buffer[] = []; for await (const chunk of stream!) chunks.push(chunk);
-  expect(sha(canonical({ elements: JSON.parse(Buffer.concat(chunks).toString()).elements }))).toBe(finalHash);
+  const exported = JSON.parse(Buffer.concat(chunks).toString());
+  expect(sha(canonical({ elements: exported.elements }))).toBe(finalHash);
+  expect(fileContent(exported.files)).toEqual(finalFiles);
   await page.reload(); await expect(page.getByRole('button', { name: '備份 JSON ↗' })).toBeEnabled();
   const reloadedDownload = page.waitForEvent('download'); await page.getByRole('button', { name: '備份 JSON ↗' }).click();
   const reloadedStream = await (await reloadedDownload).createReadStream(); const reloadedChunks: Buffer[] = [];
   for await (const chunk of reloadedStream!) reloadedChunks.push(chunk);
-  expect(sha(canonical({ elements: JSON.parse(Buffer.concat(reloadedChunks).toString()).elements }))).toBe(finalHash);
+  const reloaded = JSON.parse(Buffer.concat(reloadedChunks).toString());
+  expect(sha(canonical({ elements: reloaded.elements }))).toBe(finalHash);
+  expect(fileContent(reloaded.files)).toEqual(finalFiles);
   expect(errors).toEqual([]);
   const report = { started, finished: new Date().toISOString(), sourceCommit, dirtyPaths, artifactHash, artifactDirectory, profiling,
     browser: browser.version(), node: process.version, platform: platform(), osRelease: release(), cpu: cpus()[0]?.model, totalMemoryBytes: totalmem(),
+    workload, elementTypes: Object.fromEntries([...new Set(initial.map(element => element.type))].map(type => [type, initial.filter(element => element.type === type).length])),
+    fileContentHash: sha(JSON.stringify(finalFiles)), stoppedZoomSamples,
     viewport: page.viewportSize(), devicePixelRatio: await page.evaluate(() => devicePixelRatio), objects: count, requestedSeconds: seconds, interactionSeconds, measuredSeconds, cycles, settledZoomProbe,
     canvasCreations: { interaction: interactionCanvasCreations, includingSettledProbe: measured.canvasCreations },
     importAndSaveMilliseconds, drawingCommandMilliseconds, drawingSaveMilliseconds,
     panPairCommandMilliseconds: summarize(panTimes), zoomPairCommandMilliseconds: summarize(zoomTimes),
     animationFrameIntervalMilliseconds: summarize(measured.intervals), intervalsOver50ms: measured.intervals.filter(value => value > 50).length,
     longTaskMilliseconds: summarize(measured.longTasks), longTasksSupported: measured.longTasksSupported, memory, errors, finalSceneHash: finalHash,
-    note: 'Headless Chromium production preview; SW blocked, no relay. Dense rectangles. RAF intervals are callback scheduling, not GPU frame rate. Commands include Playwright transport and deliberate frame pacing. Heap samples do not prove a leak; no forced GC. Drawing is measured once; sustained workload pans, zooms and nudges the selected object. Sample includes a final stopped-zoom probe with 400 ms explicit idle per step; interactionSeconds separates cycling. canvasCreations counts document.createElement(canvas), not total live canvases or memory.' };
+    note: 'Headless Chromium production preview; SW blocked, no relay. Workload identifies dense rectangles or mixed shapes, unbound text/arrows and repeated references to one PNG. RAF intervals are callback scheduling, not GPU frame rate. Commands include Playwright transport and deliberate frame pacing. Heap samples do not prove a leak; no forced GC. Drawing is measured once; sustained workload pans, zooms and nudges the selected object. Mixed workload includes stopped zoom after cycle 1 and every 5 cycles; interactionSeconds includes those waits. All runs include a final stopped-zoom probe with 400 ms explicit idle per step. canvasCreations counts document.createElement(canvas), not total live canvases or memory.' };
   const path = info.outputPath(`metrics-${count}.json`); await writeFile(path, JSON.stringify(report, null, 2) + '\n');
   await info.attach('performance-metrics', { path, contentType: 'application/json' });
 });

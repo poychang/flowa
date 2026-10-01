@@ -35,6 +35,10 @@ jobs:
       - run: pnpm test:performance
         env:
           PERF_SECONDS: 6
+      - run: pnpm test:performance
+        env:
+          PERF_SECONDS: 6
+          PERF_WORKLOAD: mixed
       - run: pnpm test:pwa
       - run: pnpm build:relay
       - run: pnpm build:devices
