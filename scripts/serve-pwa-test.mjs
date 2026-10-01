@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { resolve, extname, sep } from 'node:path';
 const root = resolve('dist');
 let revision = 1, broken = false;
-const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.webmanifest': 'application/manifest+json', '.woff2': 'font/woff2', '.png': 'image/png', '.svg': 'image/svg+xml', '.json': 'application/json' };
+const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.webmanifest': 'application/manifest+json', '.woff2': 'font/woff2', '.png': 'image/png', '.svg': 'image/svg+xml', '.json': 'application/json', '.txt': 'text/plain; charset=utf-8' };
 createServer(async (req, res) => {
   const url = new URL(req.url, 'http://127.0.0.1:5181');
   res.setHeader('Cache-Control', 'no-store');
