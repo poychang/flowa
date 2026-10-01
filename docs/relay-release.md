@@ -32,7 +32,7 @@ CI 在完整 Check 通過後上傳 `relay-linux-<GitHub SHA>` artifact，保留 
 ```sh
 sha256sum -c ci-relay.tar.gz.sha256
 mkdir relay-unpacked
-tar -xzf ci-relay.tar.gz -C relay-unpacked
+tar --same-permissions -xzf ci-relay.tar.gz -C relay-unpacked
 # 以下命令在可信 Flowa checkout 執行，路徑可改成剛才解包的絕對路徑。
 pnpm verify:relay /absolute/path/relay-unpacked
 ```

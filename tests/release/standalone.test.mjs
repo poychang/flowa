@@ -16,7 +16,7 @@ test('Linux archive starts outside the checkout with packaged dependencies and l
   assert.equal((await readFile(`${archive}.sha256`, 'utf8')).split(' ')[0], sha256(await readFile(archive)));
   const root = await mkdtemp(join(tmpdir(), 'flowa-relay-standalone-'));
   t.after(() => rm(root, { recursive: true, force: true }));
-  await promisify(execFile)('tar', ['-xzf', archive, '-C', root]);
+  await promisify(execFile)('sh', ['-c', 'umask 077; exec tar "$@"', 'tar', '--same-permissions', '-xzf', archive, '-C', root]);
   const manifest = await verifyRelease(root);
   assert.equal(manifest.platform, 'linux'); assert.equal(manifest.arch, process.arch);
   assert.ok(!manifest.dependencies.some(pkg => ['react', '@excalidraw/excalidraw', 'typescript'].includes(pkg.name)));
