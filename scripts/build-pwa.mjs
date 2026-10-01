@@ -1,6 +1,7 @@
 import { cp, readdir, readFile, writeFile, mkdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { deflateSync } from 'node:zlib';
+import { frontendNotices } from './frontend-notices.mjs';
 
 // Package-owned fonts, including CJK subsets, stay on the same origin for offline use.
 await cp('node_modules/@excalidraw/excalidraw/dist/prod/fonts', 'dist/fonts', {
@@ -8,6 +9,7 @@ await cp('node_modules/@excalidraw/excalidraw/dist/prod/fonts', 'dist/fonts', {
   // Liberation is Excalidraw's server-side-only font; the browser uses system Helvetica.
   filter: source => !source.split(/[\\/]/).includes('Liberation'),
 });
+await frontendNotices();
 await mkdir('dist/icons', { recursive: true });
 function crc32(bytes) {
   let crc = 0xffffffff;

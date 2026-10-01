@@ -20,6 +20,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm test
+      - run: pnpm test:licenses
       - run: pnpm test:relay
       - run: pnpm package:relay ci-relay
       - run: pnpm test:release

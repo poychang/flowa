@@ -292,7 +292,7 @@ function Board({ link, navigate, beforeNavigate }: { link?: RoomLink; navigate: 
       </>}
       {shownLink && <label>分享連結 <input aria-label="分享連結" readOnly value={shownLink} onFocus={event => event.target.select()}/></label>}
     </div>
-    <div className="notice">{link ? '即時房間不是永久文件網址。資料只存於此瀏覽器；全員離線後可能無法復原房間，請定期匯出 JSON。' : '本機草稿 · 資料僅儲存在目前瀏覽器，請定期匯出 JSON。匯入前會在此裝置保留恢復副本。'}</div>
+    <div className="notice">{link ? '即時房間不是永久文件網址。資料只存於此瀏覽器；全員離線後可能無法復原房間，請定期匯出 JSON。' : '本機草稿 · 資料僅儲存在目前瀏覽器，請定期匯出 JSON。匯入前會在此裝置保留恢復副本。'} {import.meta.env.PROD && <a href="/THIRD-PARTY-NOTICES.txt" target="_blank" rel="noopener noreferrer">第三方授權</a>}</div>
     {error && <div className="error" role="alert"><span>{error}</span><div>
       {status === '儲存失敗' && <button onClick={() => { setError(''); void saver.current!.flush().catch(() => undefined); }}>重試儲存</button>}
       <button onClick={() => setError('')}>關閉</button>
