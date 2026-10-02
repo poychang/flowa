@@ -99,6 +99,28 @@ test('update waits for consent and checkpoints pending edits before reload', asy
   expect(JSON.parse(recovery.scene).elements).toHaveLength(1);
 });
 
+test('returning to the previous worker version requires consent and preserves newer edits offline', async ({ page, context }) => {
+  await ready(page); const original = await controller(page); await draw(page);
+  await newRelease(page);
+  let loaded = page.waitForEvent('load');
+  await page.getByRole('button', { name: '儲存副本並更新' }).click(); await loaded;
+  await expect(page.getByRole('button', { name: '備份 JSON ↗' })).toBeEnabled();
+  const newer = await controller(page); expect(newer).not.toBe(original);
+  await draw(page);
+  expect((await page.request.post('/__test__/rollback')).ok()).toBe(true);
+  await page.getByRole('button', { name: '檢查更新', exact: true }).click();
+  await expect(page.getByRole('button', { name: '儲存副本並更新' })).toBeVisible({ timeout: 60000 });
+  expect(await controller(page)).toBe(newer);
+  loaded = page.waitForEvent('load');
+  await page.getByRole('button', { name: '儲存副本並更新' }).click(); await loaded;
+  expect(await controller(page)).toBe(original);
+  await expect(page.getByRole('button', { name: '備份 JSON ↗' })).toBeEnabled();
+  await expect.poll(async () => JSON.parse((await draft(page)).scene).elements.length).toBe(2);
+  await context.setOffline(true); await page.reload();
+  await expect(page.getByRole('button', { name: '備份 JSON ↗' })).toBeEnabled();
+  expect(JSON.parse((await draft(page)).scene).elements).toHaveLength(2);
+});
+
 test('backup failure blocks activation and preserves exportable unsaved work', async ({ page }) => {
   await ready(page); const old = await controller(page); await newRelease(page); await draw(page);
   await page.evaluate(() => {

@@ -2,15 +2,18 @@ import { cp, readdir, readFile, writeFile, mkdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { deflateSync } from 'node:zlib';
 import { frontendNotices } from './frontend-notices.mjs';
+import { resolve, relative, join } from 'node:path';
+
+const output = resolve(process.argv[2] || 'dist');
 
 // Package-owned fonts, including CJK subsets, stay on the same origin for offline use.
-await cp('node_modules/@excalidraw/excalidraw/dist/prod/fonts', 'dist/fonts', {
+await cp('node_modules/@excalidraw/excalidraw/dist/prod/fonts', join(output, 'fonts'), {
   recursive: true,
   // Liberation is Excalidraw's server-side-only font; the browser uses system Helvetica.
   filter: source => !source.split(/[\\/]/).includes('Liberation'),
 });
-await frontendNotices();
-await mkdir('dist/icons', { recursive: true });
+await frontendNotices(output);
+await mkdir(join(output, 'icons'), { recursive: true });
 function crc32(bytes) {
   let crc = 0xffffffff;
   for (const byte of bytes) { crc ^= byte; for (let bit = 0; bit < 8; bit++) crc = (crc >>> 1) ^ (0xedb88320 & -(crc & 1)); }
@@ -33,17 +36,18 @@ for (const size of [192, 512]) {
     pixels.set(white ? [255, 255, 255, 255] : [35, 107, 89, 255], offset);
   }
   const header = Buffer.alloc(13); header.writeUInt32BE(size); header.writeUInt32BE(size, 4); header[8] = 8; header[9] = 6;
-  await writeFile(`dist/icons/icon-${size}.png`, Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]), chunk('IHDR', header), chunk('IDAT', deflateSync(pixels)), chunk('IEND', Buffer.alloc(0))]));
+  await writeFile(join(output, `icons/icon-${size}.png`), Buffer.concat([Buffer.from([137,80,78,71,13,10,26,10]), chunk('IHDR', header), chunk('IDAT', deflateSync(pixels)), chunk('IEND', Buffer.alloc(0))]));
 }
 async function files(dir) {
   const entries = await readdir(dir, { withFileTypes: true });
   return (await Promise.all(entries.map(entry => entry.isDirectory() ? files(`${dir}/${entry.name}`) : `${dir}/${entry.name}`))).flat();
 }
-const assets = (await files('dist')).filter(path => path !== 'dist/sw.js').sort();
+const assetPath = path => '/' + relative(output, path).replaceAll('\\', '/');
+const assets = (await files(output)).filter(path => assetPath(path) !== '/sw.js').sort();
 const template = await readFile('scripts/service-worker.js', 'utf8');
 const hash = createHash('sha256').update(template);
 let bytes = 0;
-for (const path of assets) { const content = await readFile(path); hash.update(path).update(content); bytes += content.length; }
+for (const path of assets) { const content = await readFile(path); hash.update(assetPath(path)).update(content); bytes += content.length; }
 const version = hash.digest('hex').slice(0, 20);
-await writeFile('dist/sw.js', template.replace('__VERSION__', version).replace('__ASSETS__', JSON.stringify(assets.map(path => path.slice(4)))));
+await writeFile(join(output, 'sw.js'), template.replace('__VERSION__', version).replace('__ASSETS__', JSON.stringify(assets.map(assetPath))));
 console.log(`PWA ${version}: ${assets.length} static assets, ${(bytes / 1048576).toFixed(1)} MiB (uncompressed).`);

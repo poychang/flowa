@@ -29,6 +29,9 @@
     "verify:relay": "node scripts/verify-relay-release.mjs",
     "test:release": "node --test tests/release/*.test.mjs",
     "test:licenses": "node --test tests/licenses/*.test.mjs",
+    "package:web": "node scripts/package-web.mjs",
+    "verify:web": "node scripts/verify-web-release.mjs",
+    "test:web-release": "node --test tests/web-release/*.test.mjs",
     "dev:all": "node --env-file-if-exists=.env.local scripts/dev.mjs"
   },
   "dependencies": {
