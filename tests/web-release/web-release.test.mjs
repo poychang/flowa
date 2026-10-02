@@ -37,6 +37,7 @@ test('Linux web archive is self-contained, bound to its relay, and has a complet
   assert.deepEqual([...assets].sort(), names.filter(n => n.startsWith('site/') && n !== 'site/sw.js').map(n => n.slice(4)).sort());
   const js = (await Promise.all(names.filter(n => n.startsWith('site/assets/') && n.endsWith('.js')).map(n => readFile(join(root, n), 'utf8')))).join('\n');
   assert.ok(js.includes(manifest.config.relayOrigin));
+  assert.ok(js.includes('serviceWorker') && js.includes('/sw.js'), 'production PWA code must survive build');
   assert.ok(!js.includes('ambient-config-must-not-ship.invalid'));
   const notices = await readFile(join(root, 'site/THIRD-PARTY-NOTICES.txt'), 'utf8');
   assert.ok(notices.includes('SIL OPEN FONT LICENSE'));

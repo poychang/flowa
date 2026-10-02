@@ -24,7 +24,8 @@ await mkdir(output);
 const site = join(output, 'site');
 execFileSync(process.execPath, ['node_modules/typescript/bin/tsc', '--noEmit'], { stdio: 'inherit' });
 // No local dotenv files or ambient VITE_* settings become release configuration.
-await build({ configFile: false, envDir: false, envPrefix: [],
+process.env.NODE_ENV = 'production';
+await build({ configFile: false, envDir: false, envPrefix: [], mode: 'production', base: '/',
   define: { 'import.meta.env.VITE_RELAY_URL': JSON.stringify(config.relayOrigin) },
   build: { outDir: site, emptyOutDir: false, sourcemap: false } });
 execFileSync(process.execPath, ['scripts/build-pwa.mjs', site], { stdio: 'inherit' });

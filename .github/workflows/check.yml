@@ -39,6 +39,7 @@ jobs:
       - run: pnpm test:release
       - run: pnpm package:web ci-web
         env:
+          NODE_ENV: development
           VITE_RELAY_URL: https://ambient-config-must-not-ship.invalid
       - run: pnpm test:web-release
       - run: pnpm test:soak
