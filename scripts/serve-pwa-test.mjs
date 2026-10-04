@@ -4,12 +4,18 @@ import { readFile } from 'node:fs/promises';
 import { resolve, extname, sep } from 'node:path';
 const root = resolve('dist');
 let revision = 1, broken = false;
+let previousRevision;
 const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.webmanifest': 'application/manifest+json', '.woff2': 'font/woff2', '.png': 'image/png', '.svg': 'image/svg+xml', '.json': 'application/json', '.txt': 'text/plain; charset=utf-8' };
 createServer(async (req, res) => {
   const url = new URL(req.url, 'http://127.0.0.1:5181');
   res.setHeader('Cache-Control', 'no-store');
   if (req.method === 'POST' && url.pathname === '/__test__/release') {
+    previousRevision = revision;
     revision++; broken = url.searchParams.has('broken'); res.end(String(revision)); return;
+  }
+  if (req.method === 'POST' && url.pathname === '/__test__/rollback') {
+    if (previousRevision === undefined) { res.writeHead(409); res.end(); return; }
+    revision = previousRevision; previousRevision = undefined; broken = false; res.end(String(revision)); return;
   }
   if (url.pathname === '/rooms') { res.setHeader('Content-Type', 'application/json'); res.end('{"private":"never-cache"}'); return; }
   try {

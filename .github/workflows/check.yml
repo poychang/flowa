@@ -1,5 +1,15 @@
 name: Check
 on:
+  workflow_dispatch:
+    inputs:
+      web_origin:
+        description: 'Target HTTPS frontend origin (root path only)'
+        required: true
+        type: string
+      relay_origin:
+        description: 'Target HTTPS relay origin'
+        required: true
+        type: string
   pull_request:
   push:
     branches: [main]
@@ -9,6 +19,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      RELEASE_WEB_ORIGIN: ${{ inputs.web_origin || 'https://flowa.example' }}
+      RELEASE_RELAY_ORIGIN: ${{ inputs.relay_origin || 'https://relay.example' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,6 +37,11 @@ jobs:
       - run: pnpm test:relay
       - run: pnpm package:relay ci-relay
       - run: pnpm test:release
+      - run: pnpm package:web ci-web
+        env:
+          NODE_ENV: development
+          VITE_RELAY_URL: https://ambient-config-must-not-ship.invalid
+      - run: pnpm test:web-release
       - run: pnpm test:soak
         env:
           SOAK_SECONDS: 24
@@ -50,6 +68,14 @@ jobs:
           DEVICE_ORIGIN: https://localhost:8443
           DEVICE_RELAY_ORIGIN: https://localhost:8444
       - run: pnpm test:device-launcher
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-linux-${{ github.sha }}
+          path: |
+            release-artifacts/ci-web.tar.gz
+            release-artifacts/ci-web.tar.gz.sha256
+          if-no-files-found: error
+          retention-days: 14
       - uses: actions/upload-artifact@v4
         with:
           name: relay-linux-${{ github.sha }}

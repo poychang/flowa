@@ -21,7 +21,7 @@ pnpm test:release
 - `release-manifest.json`：來源提交、Node／OS／架構、來源鎖檔雜湊，以及每個檔案的大小、權限、SHA-256 和相對 symlink 目標。
 - `provenance/pnpm-lock.yaml`：pnpm 產生的獨立解析紀錄。未使用的工作區 patch 設定不作為執行環境的安裝設定；包內不需要重新執行套件安裝。
 
-使用目前鎖檔時收集 24 個套件版本，宣告均為 MIT；兩個 debug 版本分別記錄。保留套件原檔與原本內嵌聲明，沒有以單一 MIT 範本文字取代各作者授權。缺少授權 metadata、原文或存在包外連結時封裝失敗，需先處理該依賴。此清單涵蓋 **relay 包內依賴**，不包含未打包的前端程式／字型或另外安裝的 Node.js runtime；前端授權彙整仍待完成。
+使用目前鎖檔時收集 24 個套件版本，宣告均為 MIT；兩個 debug 版本分別記錄。保留套件原檔與原本內嵌聲明，沒有以單一 MIT 範本文字取代各作者授權。缺少授權 metadata、原文或存在包外連結時封裝失敗，需先處理該依賴。此清單涵蓋 **relay 包內依賴**，不包含未打包的前端程式／字型或另外安裝的 Node.js runtime；前端授權已另行納入建置，見 [前端授權](frontend-licenses.md)。
 
 CI 在完整 Check 通過後上傳 `relay-linux-<GitHub SHA>` artifact，保留 14 天。外層 GitHub ZIP 內是 tar.gz 與 checksum；tar 保留 pnpm 的 symlink、隱藏目錄與權限，不能只下載可見的 JS 檔。PR workflow 可能使用測試合併提交，正式部署應選用已合併 main 的成功 CI 產物，並核對 manifest。
 
