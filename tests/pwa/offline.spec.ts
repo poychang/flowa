@@ -52,6 +52,22 @@ test('production app restarts offline, saves edits and exports with local fonts'
     }));
   });
   expect(fonts).toEqual(['loaded', 'loaded']);
+  await expect(page.getByRole('link', { name: '第三方授權' })).toHaveAttribute('href', '/THIRD-PARTY-NOTICES.txt');
+  const notices = await page.evaluate(async () => {
+    const response = await fetch('/THIRD-PARTY-NOTICES.txt');
+    const inventory = await (await fetch('/dependency-licenses.json')).json();
+    return { ok: response.ok, text: await response.text(), families: Object.keys(inventory.fonts.families) };
+  });
+  expect(notices.ok).toBe(true);
+  expect(notices.text).toContain('SIL OPEN FONT LICENSE');
+  expect(notices.text).toContain('Shannon Miwa');
+  expect(notices.text).toContain('react@18.3.1');
+  expect(notices.families).toHaveLength(8);
+  const popup = page.waitForEvent('popup');
+  await page.getByRole('link', { name: '第三方授權' }).click();
+  const licensePage = await popup;
+  await expect(licensePage.locator('body')).toContainText('Flowa third-party notices');
+  await licensePage.close();
   for (const name of ['備份 JSON ↗', 'PNG', 'SVG']) {
     const download = page.waitForEvent('download'); await page.getByRole('button', { name, exact: true }).click();
     expect(await (await download).failure()).toBeNull();
